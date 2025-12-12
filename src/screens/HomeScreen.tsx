@@ -1,81 +1,273 @@
-import { View, Text, StyleSheet } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, FlatList, RefreshControl, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import HeaderBlock from '../components/HeaderBlock';
+import InfoCard from '../components/InfoCard';
+import ForecastItem from '../components/ForecastItem';
+import AnimatedCard from '../components/AnimatedCard';
+import MoonEnergyPopup from '../components/MoonEnergyPopup';
+import { MoonSenseColors } from '../constants/colors';
+import { SAMPLE_DATA_NOTICE, useWeatherData } from '../hooks/useWeatherData';
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const { data, refreshing, refetch, error, lastUpdated } = useWeatherData();
+  const isInfoBanner = error === SAMPLE_DATA_NOTICE;
+
+  const handleMoonPress = () => {
+    router.push('/modal');
+  };
+
+  const handleLongMoonPress = () => {
+    setIsPopupVisible(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupVisible(false);
+  };
+
+  const handleCityPress = () => {
+    router.push('/settings'); // Navigate to the settings screen for city selection
+  };
+
+  const handleSettingsPress = () => {
+    router.push('/settings'); // Navigate to the settings screen
+  };
+
+
+  const weatherDetailsWithExpanded = useMemo(() => {
+    if (!data) return [];
+    return data.details.map(item => {
+      let expandedData;
+      switch (item.type) {
+        case 'airTemp':
+          expandedData = data.tempTrend;
+          break;
+        case 'waterTemp':
+          expandedData = data.waterTemp;
+          break;
+        case 'feelsLike':
+          expandedData = data.advice;
+          break;
+        default:
+          expandedData = undefined;
+      }
+      return { ...item, expandedData };
+    });
+  }, [data]);
+
+  if (!data) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator color={MoonSenseColors.CosmicPurple} size="large" />
+        <Text style={styles.sectionTitle}>Preparing lunar briefing...</Text>
+      </View>
+    );
+  }
+
   return (
-    <LinearGradient
-      colors={["#0B0F29", "#151B3D"]}
-      style={styles.container}
-    >
-      <Text style={styles.title}>Minimal Moon Weather</Text>
-      <Text style={styles.sub}>Today is calm and lunar-soft.</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>í¼•  Moon Phase</Text>
-        <Text style={styles.cardValue}>Waxing Gibbous</Text>
-
-        <View style={styles.row}>
-          <View>
-            <Text style={styles.label}>Temperature</Text>
-            <Text style={styles.value}>21Â°C</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refetch} tintColor={MoonSenseColors.CosmicPurple} />
+        }
+      >
+        <AnimatedCard index={0}>
+          <HeaderBlock
+            temperature={data.header.temperature}
+            city={data.header.city}
+            description={data.header.description}
+            cosmicWhisper={data.header.cosmicWhisper}
+            onMoonPress={handleMoonPress}
+            onLongMoonPress={handleLongMoonPress}
+            onCityPress={handleCityPress}
+            onSettingsPress={handleSettingsPress}
+          />
+          {lastUpdated ? <Text style={styles.updatedAt}>Updated at {lastUpdated}</Text> : null}
+          {error ? (
+            <View
+              style={[
+                styles.statusBanner,
+                isInfoBanner ? styles.statusBannerInfo : styles.statusBannerError,
+              ]}
+            >
+              <View
+                style={[
+                  styles.statusDot,
+                  isInfoBanner ? styles.statusDotInfo : styles.statusDotError,
+                ]}
+              />
+              <Text
+                style={[
+                  styles.statusText,
+                  isInfoBanner ? styles.statusTextInfo : styles.statusTextError,
+                ]}
+              >
+                {error}
+              </Text>
+            </View>
+          ) : null}
+        </AnimatedCard>
+        
+        <AnimatedCard index={1}>
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Today</Text>
+            <FlatList
+              data={data.hourly}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item: any) => item.time}
+              renderItem={({ item, index }) => {
+                const badge = index === 0 ? 'Now' : index === 1 ? '+1h' : undefined;
+                const hint = item.uv ? 'UV' : item.icon?.includes('rain') ? 'Rain' : undefined;
+                return (
+                  <ForecastItem
+                    time={item.time}
+                    icon={item.icon}
+                    temperature={item.temp}
+                    badge={badge}
+                    hint={hint}
+                  />
+                );
+              }}
+              contentContainerStyle={styles.forecastList}
+            />
           </View>
-          <View>
-            <Text style={styles.label}>Humidity</Text>
-            <Text style={styles.value}>68%</Text>
+        </AnimatedCard>
+
+        <View style={styles.sectionContainer}>
+          <View style={styles.infoCardGrid}>
+            {weatherDetailsWithExpanded.map((item: any, index) => (
+              <AnimatedCard key={item.title} index={index + 2}>
+                <InfoCard
+                  title={item.title}
+                  value={item.value}
+                  icon={item.icon}
+                  backgroundColor={item.color}
+                  type={item.type}
+                  expandedData={item.expandedData}
+                />
+              </AnimatedCard>
+            ))}
           </View>
         </View>
-      </View>
-    </LinearGradient>
+
+        <AnimatedCard index={weatherDetailsWithExpanded.length + 3}>
+          <View style={styles.moonSummaryCard}>
+            <Text style={styles.sectionTitle}>Moon Energy</Text>
+            <Text style={styles.summaryText}>{data.advice?.advice || 'Tune into lunar calm.'}</Text>
+            <TouchableOpacity onPress={() => router.push('/moon')} style={styles.summaryCta}>
+              <Text style={styles.summaryCtaText}>See more</Text>
+            </TouchableOpacity>
+          </View>
+        </AnimatedCard>
+      </ScrollView>
+
+      <MoonEnergyPopup
+        isVisible={isPopupVisible}
+        onClose={handleClosePopup}
+        message={data.advice?.advice ?? 'Embrace the cosmic vibes.'}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 120,
+    backgroundColor: MoonSenseColors.LunarGlow,
   },
-  title: {
-    color: "#FFFFFF",
-    fontSize: 28,
-    fontWeight: "600",
-    textAlign: "center",
+  contentContainer: {
+    paddingVertical: 60,
   },
-  sub: {
-    color: "#C9D2FF",
-    textAlign: "center",
-    marginTop: 6,
-    marginBottom: 40,
+  sectionContainer: {
+    marginTop: 24,
   },
-  card: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 20,
-    padding: 20,
-    borderColor: "rgba(255,255,255,0.1)",
-    borderWidth: 1,
-  },
-  cardTitle: {
-    color: "#C9D2FF",
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  cardValue: {
-    color: "#FFFFFF",
-    fontSize: 26,
-    fontWeight: "600",
-    marginBottom: 16,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  label: {
-    color: "#AAB4E8",
-    fontSize: 14,
-  },
-  value: {
-    color: "#FFFFFF",
+  sectionTitle: {
     fontSize: 20,
-    fontWeight: "600",
+    fontWeight: 'bold',
+    color: MoonSenseColors.NightGrey,
+    marginBottom: 12,
+    marginLeft: 24,
+  },
+  forecastList: {
+    paddingLeft: 18,
+  },
+  infoCardGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginHorizontal: 8,
+  },
+  updatedAt: {
+    marginTop: 8,
+    textAlign: 'center',
+    color: MoonSenseColors.NightGrey,
+    opacity: 0.7,
+  },
+  statusBanner: {
+    marginTop: 10,
+    marginHorizontal: 24,
+    padding: 10,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusBannerInfo: {
+    backgroundColor: '#F3EDFF',
+    borderWidth: 1,
+    borderColor: '#DDD0FF',
+  },
+  statusBannerError: {
+    backgroundColor: '#FCEDEA',
+    borderWidth: 1,
+    borderColor: '#F5B7A6',
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  statusDotInfo: {
+    backgroundColor: MoonSenseColors.CosmicPurple,
+  },
+  statusDotError: {
+    backgroundColor: '#C0392B',
+  },
+  statusText: {
+    flex: 1,
+    fontSize: 13,
+  },
+  statusTextInfo: {
+    color: MoonSenseColors.NightGrey,
+  },
+  statusTextError: {
+    color: '#C0392B',
+  },
+  moonSummaryCard: {
+    marginHorizontal: 16,
+    padding: 18,
+    borderRadius: 18,
+    backgroundColor: MoonSenseColors.MoonLavender,
+  },
+  summaryText: {
+    fontSize: 14,
+    color: MoonSenseColors.NightGrey,
+    marginVertical: 8,
+  },
+  summaryCta: {
+    alignSelf: 'flex-start',
+    backgroundColor: MoonSenseColors.CosmicPurple,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 14,
+  },
+  summaryCtaText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });

@@ -1,0 +1,158 @@
+Starting project at C:\Users\yz010\OneDrive\Desktop\StarWhisperer\cosmic-weather-app\MinimalMoonWeather
+React Compiler enabled
+Starting Metro Bundler
+The following packages should be updated for best compatibility with the installed expo version:
+  expo@54.0.27 - expected version: ~54.0.28
+  expo-router@6.0.17 - expected version: ~6.0.18
+Your project may not work correctly until you install the expected versions of the packages.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 94.9% (1167/1198)
+Android Bundled 6402ms node_modules\expo-router\entry.js (1198 modules)
+ LOG  Initial Route Name: (tabs)
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  useWeatherData fetch error (handled by fallback) [Error: Failed to fetch weather data]
+ ERROR  Weather API ERROR: [Error: Failed to fetch weather data] 
+
+Call Stack
+  getWeather (api\WeatherService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  useWeatherData fetch error (handled by fallback) [Error: Failed to fetch weather data]
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Tokyo [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for London [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Taipei [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for New York [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Sydney [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Los Angeles [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Paris [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Singapore [Error: Failed to fetch city snapshot]
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ ERROR  Failed to load moon phases [Error: Failed to fetch moon data] 
+
+Call Stack
+  fetchMoonPhases (src\services\weatherAPI.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ ERROR  Failed to load moon phases [Error: Failed to fetch moon data] 
+
+Call Stack
+  fetchMoonPhases (src\services\weatherAPI.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to load moon phases, falling back to sample data [Error: Failed to fetch moon data]
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to load moon phases, falling back to sample data [Error: Failed to fetch moon data]
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  useWeatherData fetch error (handled by fallback) [Error: Failed to fetch weather data]
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Taipei [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for London [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Sydney [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Tokyo [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for New York [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Singapore [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Paris [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Los Angeles [Error: Failed to fetch city snapshot]
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Taipei [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for London [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for New York [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Tokyo [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Sydney [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Los Angeles [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Paris [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Singapore [Error: Failed to fetch city snapshot]
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Taipei [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for London [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for New York [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Sydney [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Tokyo [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Paris [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Singapore [Error: Failed to fetch city snapshot]
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  Failed to fetch snapshot for Los Angeles [Error: Failed to fetch city snapshot]
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
+ WARN  useWeatherData fetch error (handled by fallback) [Error: Failed to fetch weather data]
