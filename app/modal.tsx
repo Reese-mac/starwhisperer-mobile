@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import ModalInfoBlock from '../src/components/ModalInfoBlock';
 import { MoonSenseColors } from '../src/constants/colors';
 import { fetchMoonDetails, MoonDetails } from '../src/services/weatherAPI';
+import { getMoonDetails as getMockMoonDetails } from '../src/services/mockAPI';
 import { useSettings } from '../src/context/SettingsContext';
 
 const ModalScreen = () => {
@@ -15,26 +16,36 @@ const ModalScreen = () => {
   const [moonDetails, setMoonDetails] = useState<MoonDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const loadDetails = async () => {
+  const loadDetails = useCallback(async () => {
     setLoading(true);
     setErrorMessage(null);
+    setStatusMessage(null);
     try {
       const details = await fetchMoonDetails(city);
       setMoonDetails(details);
     } catch (error) {
-      console.error('Failed to fetch moon details', error);
-      const message = error instanceof Error ? error.message : 'Unable to reach moon data service.';
-      setErrorMessage(message);
-      setMoonDetails(null);
+      console.warn('Failed to fetch moon details', error);
+      try {
+        const fallbackDetails = await getMockMoonDetails();
+        setMoonDetails(fallbackDetails);
+        setStatusMessage('Showing sample moon details while live data reconnects.');
+        return;
+      } catch (mockError) {
+        console.warn('Failed to load fallback moon details', mockError);
+        const message = error instanceof Error ? error.message : 'Unable to reach moon data service.';
+        setErrorMessage(message);
+        setMoonDetails(null);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [city]);
 
   useEffect(() => {
     loadDetails();
-  }, [city]);
+  }, [city, loadDetails]);
 
   if (loading) {
     return (
@@ -61,6 +72,12 @@ const ModalScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {statusMessage && (
+        <View style={styles.statusBanner}>
+          <View style={styles.statusDot} />
+          <Text style={styles.statusText}>{statusMessage}</Text>
+        </View>
+      )}
       <LinearGradient colors={[MoonSenseColors.MidnightIndigo, '#2E2447']} style={styles.hero}>
         <TouchableOpacity
           style={styles.backButton}
@@ -94,6 +111,28 @@ const styles = StyleSheet.create({
   center: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  statusBanner: {
+    marginHorizontal: 24,
+    marginTop: 16,
+    marginBottom: -8,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: '#F3EDFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: MoonSenseColors.CosmicPurple,
+    marginRight: 8,
+  },
+  statusText: {
+    color: MoonSenseColors.NightGrey,
+    fontSize: 13,
+    flex: 1,
   },
   hero: {
     margin: 24,

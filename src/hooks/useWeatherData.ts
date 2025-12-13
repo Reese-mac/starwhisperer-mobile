@@ -73,7 +73,11 @@ export const useWeatherData = () => {
       console.warn('useWeatherData fetch error (handled by fallback)', err);
       try {
         const mockBundle = await getMockWeatherBundle();
-        applyBundle(mockBundle);
+        const cityName = city?.name ?? mockBundle.header.city;
+        applyBundle({
+          ...mockBundle,
+          header: { ...mockBundle.header, city: cityName },
+        });
         setError(SAMPLE_DATA_NOTICE);
       } catch (mockErr) {
         console.error('useWeatherData mock fallback error', mockErr);

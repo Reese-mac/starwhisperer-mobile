@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AnimatedCard from '../components/AnimatedCard';
 import ForecastItem from '../components/ForecastItem';
@@ -40,8 +41,23 @@ const DayCard = ({
 const ForecastScreen = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { data, refreshing, refetch } = useWeatherData();
+  const scrollRef = useRef<ScrollView>(null);
+  const dayListRef = useRef<FlatList<any>>(null);
+  useScrollToTop(scrollRef);
+  useFocusEffect(
+    React.useCallback(() => {
+      setSelectedIndex(0);
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+      try {
+        dayListRef.current?.scrollToIndex({ index: 0, animated: true });
+      } catch {
+        /* ignore scroll errors */
+      }
+      return undefined;
+    }, []),
+  );
 
-  const daily = data?.daily ?? [];
+  const daily = useMemo(() => data?.daily ?? [], [data]);
   const hourly = data?.hourly ?? [];
 
   const selectedDay = useMemo(() => daily[selectedIndex], [daily, selectedIndex]);
@@ -62,6 +78,7 @@ const ForecastScreen = () => {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={MoonSenseColors.CosmicPurple} />}
@@ -72,6 +89,7 @@ const ForecastScreen = () => {
             <Text style={styles.heroTitle}>Weekly outlook</Text>
             <Text style={styles.heroSubtitle}>Tap a day to reveal rituals and conditions.</Text>
             <FlatList
+              ref={dayListRef}
               data={daily}
               keyExtractor={item => item.day}
               horizontal

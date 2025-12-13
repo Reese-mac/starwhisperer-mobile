@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, FlatList, RefreshControl, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import HeaderBlock from '../components/HeaderBlock';
 import InfoCard from '../components/InfoCard';
@@ -14,6 +15,14 @@ export default function HomeScreen() {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const { data, refreshing, refetch, error, lastUpdated } = useWeatherData();
   const isInfoBanner = error === SAMPLE_DATA_NOTICE;
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
+  useFocusEffect(
+    React.useCallback(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+      return undefined;
+    }, []),
+  );
 
   const handleMoonPress = () => {
     router.push('/modal');
@@ -28,11 +37,11 @@ export default function HomeScreen() {
   };
 
   const handleCityPress = () => {
-    router.push('/settings'); // Navigate to the settings screen for city selection
+    router.push('/(tabs)/settings'); // Navigate to the tabbed settings screen for city selection
   };
 
   const handleSettingsPress = () => {
-    router.push('/settings'); // Navigate to the settings screen
+    router.push('/(tabs)/settings'); // Navigate to the tabbed settings screen
   };
 
 
@@ -68,8 +77,9 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView 
-        style={styles.container} 
+      <ScrollView
+        ref={scrollRef}
+        style={styles.container}
         contentContainerStyle={styles.contentContainer}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refetch} tintColor={MoonSenseColors.CosmicPurple} />

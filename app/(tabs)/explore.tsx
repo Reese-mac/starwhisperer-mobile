@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import ListCard from '../../src/components/ListCard';
 import { MoonSenseColors } from '../../src/constants/colors';
@@ -13,6 +14,18 @@ const CARD_COLORS = [MoonSenseColors.MoonLavender, MoonSenseColors.MistBlue, Moo
 
 const ExploreScreen = () => {
   const { unit } = useSettings();
+  const listRef = useRef<FlatList<any>>(null);
+  useScrollToTop(listRef);
+  useFocusEffect(
+    React.useCallback(() => {
+      try {
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+      } catch {
+        /* ignore scroll errors */
+      }
+      return undefined;
+    }, []),
+  );
   const [cities, setCities] = useState<any[]>([]);
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
@@ -204,6 +217,7 @@ const ExploreScreen = () => {
           </View>
         ) : (
           <FlatList
+            ref={listRef}
             data={searchResults}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
@@ -224,6 +238,7 @@ const ExploreScreen = () => {
         </View>
       ) : (
         <FlatList
+          ref={listRef}
           data={filteredCities}
           keyExtractor={item => item.city}
           renderItem={({ item }) => (

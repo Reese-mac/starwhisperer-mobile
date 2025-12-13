@@ -156,3 +156,5 @@ Call Stack
  WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
  WARN  Weather API ERROR (handled): [Error: Failed to fetch weather data]
  WARN  useWeatherData fetch error (handled by fallback) [Error: Failed to fetch weather data]
+ WARN  [WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.
+ WARN  City search is unavailable right now. [Error: Failed to search city]

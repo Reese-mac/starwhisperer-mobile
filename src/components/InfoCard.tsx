@@ -30,7 +30,6 @@ export type InfoCardProps = {
 };
 
 const InfoCard = ({ title, value, icon, backgroundColor, type, expandedData }: InfoCardProps) => {
-  const hasExpanded = Boolean(expandedData);
   const [isExpanded, setIsExpanded] = useState(false);
   const animatedHeight = useRef(new Animated.Value(120)).current; // Start with a sane default height
   const [initialHeight, setInitialHeight] = useState(0);

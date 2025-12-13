@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { CITY_OPTIONS, CityOption } from '../constants/cities';
 
 type TemperatureUnit = 'celsius' | 'fahrenheit';
@@ -71,39 +71,39 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     loadSettings();
   }, []);
 
-  const persist = async (key: string, value: string) => {
+  const persist = useCallback(async (key: string, value: string) => {
     try {
       await AsyncStorage.setItem(key, value);
     } catch (error) {
       console.error('Failed to persist setting', key, error);
     }
-  };
+  }, []);
 
-  const setCityById = (id: string) => {
+  const setCityById = useCallback((id: string) => {
     if (!CITY_OPTIONS.some(option => option.id === id)) return;
     setCityId(id);
     persist(STORAGE_KEYS.CITY, id);
-  };
+  }, [persist]);
 
-  const setUnit = (value: TemperatureUnit) => {
+  const setUnit = useCallback((value: TemperatureUnit) => {
     setUnitState(value);
     persist(STORAGE_KEYS.UNIT, value);
-  };
+  }, [persist]);
 
-  const setAutoLocate = (value: boolean) => {
+  const setAutoLocate = useCallback((value: boolean) => {
     setAutoLocateState(value);
     persist(STORAGE_KEYS.AUTO_LOCATION, value.toString());
-  };
+  }, [persist]);
 
-  const setBackgroundSound = (value: boolean) => {
+  const setBackgroundSound = useCallback((value: boolean) => {
     setBackgroundSoundState(value);
     persist(STORAGE_KEYS.BACKGROUND_SOUND, value.toString());
-  };
+  }, [persist]);
 
-  const setSoftLightMode = (value: boolean) => {
+  const setSoftLightMode = useCallback((value: boolean) => {
     setSoftLightModeState(value);
     persist(STORAGE_KEYS.SOFT_LIGHT_MODE, value.toString());
-  };
+  }, [persist]);
 
   const value = useMemo<SettingsState>(
     () => ({
@@ -119,7 +119,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
       setBackgroundSound,
       setSoftLightMode,
     }),
-    [ready, cityId, unit, autoLocate, backgroundSound, softLightMode],
+    [ready, cityId, unit, autoLocate, backgroundSound, softLightMode, setCityById, setUnit, setAutoLocate, setBackgroundSound, setSoftLightMode],
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
