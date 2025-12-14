@@ -14,9 +14,9 @@ const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   'sun-rain': 'rainy-outline',
 };
 
-const CardIcon = ({ icon }: { icon: string }) => (
-  <View style={styles.iconPlaceholder}>
-    <Ionicons name={iconMap[icon] || 'planet-outline'} size={20} color={MoonSenseColors.NightGrey} />
+const CardIcon = ({ icon, color, background }: { icon: string; color: string; background: string }) => (
+  <View style={[styles.iconPlaceholder, { backgroundColor: background }]}>
+    <Ionicons name={iconMap[icon] || 'planet-outline'} size={20} color={color} />
   </View>
 );
 
@@ -27,13 +27,20 @@ export type InfoCardProps = {
   backgroundColor: string;
   type: 'humidity' | 'feelsLike' | 'wind' | 'uvIndex' | 'airQuality' | 'pressure' | 'sunriseSunset' | 'airTemp' | 'waterTemp'; // Added new types
   expandedData?: any; // To pass the expanded content from API
+  softLightMode?: boolean;
 };
 
-const InfoCard = ({ title, value, icon, backgroundColor, type, expandedData }: InfoCardProps) => {
+const InfoCard = ({ title, value, icon, backgroundColor, type, expandedData, softLightMode = false }: InfoCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const animatedHeight = useRef(new Animated.Value(120)).current; // Start with a sane default height
   const [initialHeight, setInitialHeight] = useState(0);
   const [expandedContentHeight, setExpandedContentHeight] = useState(0);
+  const cardBg = softLightMode ? 'rgba(255,255,255,0.12)' : backgroundColor;
+  const textColor = softLightMode ? '#EDECF7' : MoonSenseColors.NightGrey;
+  const iconBg = softLightMode ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.5)';
+  const iconColor = textColor;
+  const dividerColor = softLightMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
+  const borderColor = softLightMode ? 'rgba(255,255,255,0.2)' : 'transparent';
 
   useEffect(() => {
     if (isExpanded) {
@@ -61,33 +68,33 @@ const InfoCard = ({ title, value, icon, backgroundColor, type, expandedData }: I
     switch (type) {
       case 'airTemp':
         return (
-          <View style={styles.expandedContent}>
-            <Text style={styles.expandedTitle}>Today&apos;s Temperature Trend:</Text>
-            <Text style={styles.expandedText}>{expandedData.indicator}</Text>
-            <Text style={styles.expandedText}>Hourly: {expandedData.hourly.join(', ')}</Text>
+          <View style={[styles.expandedContent, { borderTopColor: dividerColor }]}>
+            <Text style={[styles.expandedTitle, { color: textColor }]}>Today&apos;s Temperature Trend:</Text>
+            <Text style={[styles.expandedText, { color: textColor }]}>{expandedData.indicator}</Text>
+            <Text style={[styles.expandedText, { color: textColor }]}>Hourly: {expandedData.hourly.join(', ')}</Text>
           </View>
         );
       case 'waterTemp':
         return (
-          <View style={styles.expandedContent}>
-            <Text style={styles.expandedTitle}>Water Temperature:</Text>
-            <Text style={styles.expandedText}>Current: {expandedData.current}</Text>
-            <Text style={styles.expandedText}>Trend: {expandedData.trend}</Text>
-            <Text style={styles.expandedText}>Suggestion: {expandedData.suggestion}</Text>
+          <View style={[styles.expandedContent, { borderTopColor: dividerColor }]}>
+            <Text style={[styles.expandedTitle, { color: textColor }]}>Water Temperature:</Text>
+            <Text style={[styles.expandedText, { color: textColor }]}>Current: {expandedData.current}</Text>
+            <Text style={[styles.expandedText, { color: textColor }]}>Trend: {expandedData.trend}</Text>
+            <Text style={[styles.expandedText, { color: textColor }]}>Suggestion: {expandedData.suggestion}</Text>
           </View>
         );
       case 'feelsLike':
         return (
-          <View style={styles.expandedContent}>
-            <Text style={styles.expandedTitle}>Today&apos;s Emotional Advice:</Text>
-            <Text style={styles.expandedText}>{expandedData.advice}</Text>
+          <View style={[styles.expandedContent, { borderTopColor: dividerColor }]}>
+            <Text style={[styles.expandedTitle, { color: textColor }]}>Today&apos;s Emotional Advice:</Text>
+            <Text style={[styles.expandedText, { color: textColor }]}>{expandedData.advice}</Text>
           </View>
         );
       default:
         return (
-          <View style={styles.expandedContent}>
-            <Text style={styles.expandedTitle}>More Details:</Text>
-            <Text style={styles.expandedText}>No expanded content for this type yet.</Text>
+          <View style={[styles.expandedContent, { borderTopColor: dividerColor }]}>
+            <Text style={[styles.expandedTitle, { color: textColor }]}>More Details:</Text>
+            <Text style={[styles.expandedText, { color: textColor }]}>No expanded content for this type yet.</Text>
           </View>
         );
     }
@@ -103,14 +110,17 @@ const InfoCard = ({ title, value, icon, backgroundColor, type, expandedData }: I
           animatedHeight.setValue(event.nativeEvent.layout.height); // Set initial animated value
         }
       }}
-      style={[styles.baseContainer, { backgroundColor }]}
+      style={[
+        styles.baseContainer,
+        { backgroundColor: cardBg, borderColor, borderWidth: softLightMode ? 1 : 0 },
+      ]}
     >
       <Animated.View style={[styles.animatedContainer, { height: animatedHeight }]}>
         <View style={styles.header}>
-          <CardIcon icon={icon} />
-          <Text style={styles.title}>{title}</Text>
+          <CardIcon icon={icon} color={iconColor} background={iconBg} />
+          <Text style={[styles.title, { color: textColor }]}>{title}</Text>
         </View>
-        <Text style={styles.value}>{value}</Text>
+        <Text style={[styles.value, { color: textColor }]}>{value}</Text>
         <View onLayout={(event) => {
           if (expandedContentHeight === 0) {
             setExpandedContentHeight(event.nativeEvent.layout.height);
@@ -130,6 +140,8 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 120,
     overflow: 'hidden', // Clip content outside rounded borders
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   animatedContainer: {
     padding: 16,

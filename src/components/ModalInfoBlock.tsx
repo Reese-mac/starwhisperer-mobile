@@ -7,15 +7,19 @@ export type ModalInfoBlockProps = {
   label: string;
   value: string;
   icon: keyof typeof Ionicons.glyphMap;
+  softLightMode?: boolean;
 };
 
-const ModalInfoBlock = ({ label, value, icon }: ModalInfoBlockProps) => {
+const ModalInfoBlock = ({ label, value, icon, softLightMode = false }: ModalInfoBlockProps) => {
+  const cardBg = softLightMode ? 'rgba(255,255,255,0.08)' : MoonSenseColors.MistBlue;
+  const textColor = softLightMode ? '#EDECF7' : MoonSenseColors.NightGrey;
+  const iconColor = softLightMode ? '#EDECF7' : MoonSenseColors.NightGrey;
   return (
-    <View style={styles.container}>
-      <Ionicons name={icon} size={24} color={MoonSenseColors.NightGrey} style={styles.icon} />
+    <View style={[styles.container, { backgroundColor: cardBg }]}>
+      <Ionicons name={icon} size={24} color={iconColor} style={styles.icon} />
       <View style={styles.textContainer}>
-        <Text style={styles.label}>{label}</Text>
-        <Text style={styles.value}>{value}</Text>
+        <Text style={[styles.label, { color: textColor, opacity: softLightMode ? 0.85 : 0.7 }]}>{label}</Text>
+        <Text style={[styles.value, { color: textColor }]}>{value}</Text>
       </View>
     </View>
   );

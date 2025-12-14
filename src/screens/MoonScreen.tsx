@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import AnimatedCard from '../components/AnimatedCard';
@@ -17,10 +17,12 @@ const PhaseItem = ({
   phase,
   active,
   onSelect,
+  styles,
 }: {
   phase: any;
   active: boolean;
   onSelect: () => void;
+  styles: ReturnType<typeof createStyles>;
 }) => (
   <TouchableOpacity
     style={[styles.phaseItem, active && styles.phaseItemActive]}
@@ -34,7 +36,8 @@ const PhaseItem = ({
 );
 
 const MoonScreen = () => {
-  const { city } = useSettings();
+  const { city, softLightMode } = useSettings();
+  const styles = useMemo(() => createStyles(softLightMode), [softLightMode]);
   const [phases, setPhases] = useState<MoonPhaseEntry[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -80,7 +83,11 @@ const MoonScreen = () => {
   }
 
   return (
-    <ScrollView ref={scrollRef} style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      ref={scrollRef}
+      style={[styles.container, { backgroundColor: softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow }]}
+      contentContainerStyle={styles.contentContainer}
+    >
       {statusMessage && (
         <View style={styles.statusBanner}>
           <View style={styles.statusDot} />
@@ -124,6 +131,7 @@ const MoonScreen = () => {
                 phase={item}
                 active={index === selectedIndex}
                 onSelect={() => setSelectedIndex(index)}
+                styles={styles}
               />
             )}
             scrollEnabled={false}
@@ -151,104 +159,118 @@ const MoonScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: MoonSenseColors.LunarGlow },
-  contentContainer: { paddingTop: 60, paddingBottom: 80 },
-  center: { justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 12, color: MoonSenseColors.NightGrey },
+const createStyles = (softLightMode: boolean) => {
+  const textPrimary = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
+  const textSecondary = softLightMode ? 'rgba(255,255,255,0.8)' : MoonSenseColors.OrbitGrey;
+  const cardBg = softLightMode ? '#3A3B46' : MoonSenseColors.MoonWhite;
+  const pillBg = softLightMode ? 'rgba(255,255,255,0.08)' : MoonSenseColors.MistBlue;
+  const borderColor = softLightMode ? 'rgba(255,255,255,0.2)' : 'rgba(73,74,87,0.1)';
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: 'transparent' },
+    contentContainer: { paddingTop: 60, paddingBottom: 80 },
+    center: { justifyContent: 'center', alignItems: 'center' },
+    loadingText: { marginTop: 12, color: textPrimary },
 
-  statusBanner: {
-    margin: 16,
-    padding: 12,
-    borderRadius: 16,
-    backgroundColor: '#F3EDFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: MoonSenseColors.CosmicPurple,
-    marginRight: 8,
-  },
-  statusText: { color: MoonSenseColors.NightGrey, fontSize: 13 },
+    statusBanner: {
+      margin: 16,
+      padding: 12,
+      borderRadius: 16,
+      backgroundColor: softLightMode ? '#3A3B46' : '#F3EDFF',
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: softLightMode ? 1 : 0,
+      borderColor,
+    },
+    statusDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: MoonSenseColors.CosmicPurple,
+      marginRight: 8,
+    },
+    statusText: { color: textPrimary, fontSize: 13 },
 
-  hero: {
-    marginHorizontal: 16,
-    borderRadius: 28,
-    padding: 26,
-    backgroundColor: MoonSenseColors.MidnightIndigo,
-    overflow: 'hidden',
-    position: 'relative',
-  },
+    hero: {
+      marginHorizontal: 16,
+      borderRadius: 28,
+      padding: 26,
+      backgroundColor: MoonSenseColors.MidnightIndigo,
+      overflow: 'hidden',
+      position: 'relative',
+    },
 
-  heroLabel: { color: '#B8B7D6', fontSize: 12, letterSpacing: 2, zIndex: 1 },
-  heroTitle: { color: '#fff', fontSize: 32, fontWeight: '700', marginTop: 12, zIndex: 1 },
-  heroDescription: { color: '#F4F0FF', marginTop: 6, zIndex: 1 },
+    heroLabel: { color: '#B8B7D6', fontSize: 12, letterSpacing: 2, zIndex: 1 },
+    heroTitle: { color: '#fff', fontSize: 32, fontWeight: '700', marginTop: 12, zIndex: 1 },
+    heroDescription: { color: '#F4F0FF', marginTop: 6, zIndex: 1 },
 
-  heroMetaRow: { flexDirection: 'row', gap: 14, marginTop: 24, zIndex: 1 },
-  metaBlock: {
-    flex: 1,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 12,
-  },
-  metaLabel: { color: '#B8B7D6', fontSize: 12 },
-  metaValue: { color: '#fff', fontSize: 16, fontWeight: '600', marginTop: 6 },
+    heroMetaRow: { flexDirection: 'row', gap: 14, marginTop: 24, zIndex: 1 },
+    metaBlock: {
+      flex: 1,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      padding: 12,
+    },
+    metaLabel: { color: '#B8B7D6', fontSize: 12 },
+    metaValue: { color: '#fff', fontSize: 16, fontWeight: '600', marginTop: 6 },
 
-  phaseListWrapper: {
-    margin: 16,
-    borderRadius: 24,
-    padding: 18,
-    backgroundColor: MoonSenseColors.MoonWhite,
-  },
-  sectionTitle: { fontSize: 20, fontWeight: '700', marginBottom: 12 },
+    phaseListWrapper: {
+      margin: 16,
+      borderRadius: 24,
+      padding: 18,
+      backgroundColor: cardBg,
+      borderWidth: softLightMode ? 1 : 0,
+      borderColor,
+    },
+    sectionTitle: { fontSize: 20, fontWeight: '700', marginBottom: 12, color: textPrimary },
 
-  phaseItem: {
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(73,74,87,0.1)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    marginBottom: 10,
-  },
-  phaseItemActive: {
-    backgroundColor: MoonSenseColors.CosmicPurple,
-    borderColor: MoonSenseColors.CosmicPurple,
-  },
-  phaseIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: MoonSenseColors.NightGrey,
-  },
-  phaseIconActive: { borderColor: '#fff' },
-  phaseName: { fontWeight: '600', flex: 1 },
-  phaseSub: { fontSize: 12 },
-  phaseNameActive: { color: '#fff' },
+    phaseItem: {
+      borderRadius: 18,
+      padding: 14,
+      borderWidth: 1,
+      borderColor,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      marginBottom: 10,
+      backgroundColor: softLightMode ? '#353643' : MoonSenseColors.MoonWhite,
+    },
+    phaseItemActive: {
+      backgroundColor: MoonSenseColors.CosmicPurple,
+      borderColor: MoonSenseColors.CosmicPurple,
+    },
+    phaseIcon: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      borderWidth: 2,
+      borderColor: softLightMode ? textPrimary : MoonSenseColors.NightGrey,
+    },
+    phaseIconActive: { borderColor: '#fff' },
+    phaseName: { fontWeight: '600', flex: 1, color: textPrimary },
+    phaseSub: { fontSize: 12, color: textSecondary },
+    phaseNameActive: { color: '#fff' },
 
-  ritualCard: {
-    margin: 16,
-    borderRadius: 24,
-    padding: 22,
-    backgroundColor: MoonSenseColors.MistBlue,
-  },
-  ritualRow: { flexDirection: 'row', gap: 14, marginTop: 16 },
-  ritualIndex: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: MoonSenseColors.MoonWhite,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ritualIndexText: { fontWeight: '700' },
-  ritualTitle: { fontWeight: '600' },
-  ritualDetail: { color: MoonSenseColors.OrbitGrey },
-});
+    ritualCard: {
+      margin: 16,
+      borderRadius: 24,
+      padding: 22,
+      backgroundColor: pillBg,
+      borderWidth: softLightMode ? 1 : 0,
+      borderColor,
+    },
+    ritualRow: { flexDirection: 'row', gap: 14, marginTop: 16 },
+    ritualIndex: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: softLightMode ? '#4A4B58' : MoonSenseColors.MoonWhite,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    ritualIndexText: { fontWeight: '700', color: textPrimary },
+    ritualTitle: { fontWeight: '600', color: textPrimary },
+    ritualDetail: { color: textSecondary },
+  });
+};
 
 export default MoonScreen;

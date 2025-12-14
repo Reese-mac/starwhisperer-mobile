@@ -90,13 +90,19 @@ const buildAdvice = (temp: number): EmotionalAdviceData => {
 };
 
 const formatUnixTime = (value?: number) =>
-  value ? new Date(value * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--';
+  value
+    ? new Date(value * 1000).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      })
+    : '--';
 
 const formatDayLabel = (timestamp: number) => {
   const date = new Date(timestamp * 1000);
   return {
-    day: date.toLocaleDateString([], { weekday: 'short' }),
-    dateLabel: date.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+    day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+    dateLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
   };
 };
 

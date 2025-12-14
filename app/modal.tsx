@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,7 +12,8 @@ import { useSettings } from '../src/context/SettingsContext';
 
 const ModalScreen = () => {
   const router = useRouter();
-  const { city } = useSettings();
+  const { city, softLightMode } = useSettings();
+  const styles = useMemo(() => createStyles(softLightMode), [softLightMode]);
   const [moonDetails, setMoonDetails] = useState<MoonDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -93,9 +94,9 @@ const ModalScreen = () => {
       </LinearGradient>
 
       <View style={styles.infoContainer}>
-        <ModalInfoBlock label="Illumination" value={moonDetails.illumination} icon="sparkles-outline" />
-        <ModalInfoBlock label="Moonrise" value={moonDetails.riseTime} icon="arrow-up-outline" />
-        <ModalInfoBlock label="Moonset" value={moonDetails.setTime} icon="arrow-down-outline" />
+        <ModalInfoBlock label="Illumination" value={moonDetails.illumination} icon="sparkles-outline" softLightMode={softLightMode} />
+        <ModalInfoBlock label="Moonrise" value={moonDetails.riseTime} icon="arrow-up-outline" softLightMode={softLightMode} />
+        <ModalInfoBlock label="Moonset" value={moonDetails.setTime} icon="arrow-down-outline" softLightMode={softLightMode} />
       </View>
 
       <StatusBar style="light" />
@@ -103,91 +104,101 @@ const ModalScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: MoonSenseColors.LunarGlow,
-  },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statusBanner: {
-    marginHorizontal: 24,
-    marginTop: 16,
-    marginBottom: -8,
-    padding: 12,
-    borderRadius: 16,
-    backgroundColor: '#F3EDFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: MoonSenseColors.CosmicPurple,
-    marginRight: 8,
-  },
-  statusText: {
-    color: MoonSenseColors.NightGrey,
-    fontSize: 13,
-    flex: 1,
-  },
-  hero: {
-    margin: 24,
-    borderRadius: 30,
-    padding: 30,
-    paddingTop: 50,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  phaseLabel: {
-    color: '#C6C3FF',
-    textTransform: 'uppercase',
-    letterSpacing: 3,
-  },
-  phaseName: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: '700',
-    marginTop: 12,
-  },
-  mantra: {
-    color: '#E4E0FF',
-    marginTop: 6,
-    fontSize: 16,
-  },
-  infoContainer: {
-    alignSelf: 'stretch',
-  },
-  errorText: {
-    color: MoonSenseColors.NightGrey,
-    fontSize: 16,
-    textAlign: 'center',
-    marginHorizontal: 32,
-  },
-  retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 20,
-    backgroundColor: MoonSenseColors.CosmicPurple,
-  },
-  retryText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-});
+const createStyles = (softLightMode: boolean) => {
+  const textPrimary = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
+  const cardBg = softLightMode ? '#3A3B46' : '#F3EDFF';
+  const borderColor = softLightMode ? 'rgba(255,255,255,0.2)' : 'transparent';
+  const surfaceBg = softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow;
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: surfaceBg,
+    },
+    center: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    statusBanner: {
+      marginHorizontal: 24,
+      marginTop: 16,
+      marginBottom: -8,
+      padding: 12,
+      borderRadius: 16,
+      backgroundColor: cardBg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: softLightMode ? 1 : 0,
+      borderColor,
+    },
+    statusDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: MoonSenseColors.CosmicPurple,
+      marginRight: 8,
+    },
+    statusText: {
+      color: textPrimary,
+      fontSize: 13,
+      flex: 1,
+    },
+    hero: {
+      margin: 24,
+      borderRadius: 30,
+      padding: 30,
+      paddingTop: 50,
+    },
+    backButton: {
+      position: 'absolute',
+      top: 20,
+      left: 20,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    phaseLabel: {
+      color: '#C6C3FF',
+      textTransform: 'uppercase',
+      letterSpacing: 3,
+    },
+    phaseName: {
+      color: '#fff',
+      fontSize: 32,
+      fontWeight: '700',
+      marginTop: 12,
+    },
+    mantra: {
+      color: '#E4E0FF',
+      marginTop: 6,
+      fontSize: 16,
+    },
+    infoContainer: {
+      alignSelf: 'stretch',
+      paddingHorizontal: 16,
+      gap: 12,
+    },
+    errorText: {
+      color: textPrimary,
+      fontSize: 16,
+      textAlign: 'center',
+      marginHorizontal: 32,
+    },
+    retryButton: {
+      marginTop: 16,
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 20,
+      backgroundColor: MoonSenseColors.CosmicPurple,
+    },
+    retryText: {
+      color: '#fff',
+      fontWeight: '600',
+      fontSize: 16,
+    },
+  });
+};
 
 export default ModalScreen;

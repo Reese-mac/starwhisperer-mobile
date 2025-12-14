@@ -1,7 +1,5 @@
-const API_KEY = process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY ?? 'YOUR_API_KEY_HERE';
-const ONECALL_URL = 'https://api.openweathermap.org/data/2.5/onecall';
-const GEO_URL = 'https://api.openweathermap.org/geo/1.0/direct';
-const REV_GEO_URL = 'https://api.openweathermap.org/geo/1.0/reverse';
+const API_KEY = process.env.EXPO_PUBLIC_WEATHERAPI_KEY ?? '';
+const BASE_URL = 'https://api.weatherapi.com/v1';
 
 export type OpenWeatherUnits = 'metric' | 'imperial';
 
@@ -49,109 +47,124 @@ export type WeatherServiceResponse = {
   };
 };
 
-// 🌙 月亮光照率計算（從 moon_phase 得到百分比）
-export function getIllumination(phase: number): number {
-  if (phase <= 0.5) {
-    return phase * 2 * 100;
-  }
-  return (1 - phase) * 2 * 100;
-}
-
 const ensureApiKey = () => {
-  if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
-    console.warn(
-      '[WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.',
-    );
+  if (!API_KEY) {
+    console.warn('[WeatherService] Missing WeatherAPI key. Set EXPO_PUBLIC_WEATHERAPI_KEY in .env.');
+    return false;
   }
+  return true;
 };
 
-// 📍 用搜尋字串找城市座標（Explore 頁）
-export async function searchCity(query: string) {
-  ensureApiKey();
-  if (!query.trim()) return [];
-  const url = `${GEO_URL}?q=${encodeURIComponent(query)}&limit=5&appid=${API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error('Failed to search city');
-  }
-  return res.json();
-}
+const phaseMap: Record<string, number> = {
+  'New Moon': 0,
+  'Waxing Crescent': 0.125,
+  'First Quarter': 0.25,
+  'Waxing Gibbous': 0.375,
+  'Full Moon': 0.5,
+  'Waning Gibbous': 0.625,
+  'Last Quarter': 0.75,
+  'Third Quarter': 0.75,
+  'Waning Crescent': 0.875,
+};
 
-// 📍 反查城市（Home GPS → city name）
-export async function reverseGeocode(lat: number, lon: number) {
-  ensureApiKey();
-  const url = `${REV_GEO_URL}?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error('Failed to reverse geocode');
-  }
-  const json = await res.json();
-  return json[0]?.name || 'Unknown';
-}
+const toPhaseFraction = (name: string) => phaseMap[name] ?? 0;
 
-// 🌤 主天氣資料（current, hourly, daily）
-export async function getWeather(lat: number, lon: number, units: OpenWeatherUnits = 'metric') {
-  ensureApiKey();
-  const url = `${ONECALL_URL}?lat=${lat}&lon=${lon}&units=${units}&exclude=minutely,alerts&appid=${API_KEY}`;
+const toSecondsFromMidnight = (timeStr: string) => {
+  // WeatherAPI returns "07:59 AM" style strings
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!match) return 0;
+  let [_, hh, mm, ampm] = match;
+  let hour = Number(hh);
+  const minute = Number(mm);
+  const upper = ampm.toUpperCase();
+  if (upper === 'PM' && hour !== 12) hour += 12;
+  if (upper === 'AM' && hour === 12) hour = 0;
+  return hour * 3600 + minute * 60;
+};
+
+const toEpochFromLocal = (dateEpoch: number, timeStr: string) =>
+  dateEpoch + toSecondsFromMidnight(timeStr);
+
+export async function getWeather(
+  lat: number,
+  lon: number,
+  units: OpenWeatherUnits = 'metric',
+): Promise<WeatherServiceResponse | null> {
+  if (!ensureApiKey()) return null;
 
   try {
+    const query = `${lat},${lon}`;
+    const url = `${BASE_URL}/forecast.json?key=${API_KEY}&q=${encodeURIComponent(
+      query,
+    )}&days=7&aqi=no&alerts=no`;
+
     const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error('Failed to fetch weather data');
-    }
+    if (!res.ok) throw new Error('WeatherAPI request failed');
+
     const json = await res.json();
+    const location = json.location;
+    const current = json.current;
+    const forecast = json.forecast?.forecastday ?? [];
+    const today = forecast[0];
 
-    const illumination = getIllumination(json.daily[0].moon_phase);
+    const useImperial = units === 'imperial';
+    const tempField = useImperial ? 'temp_f' : 'temp_c';
+    const feelsField = useImperial ? 'feelslike_f' : 'feelslike_c';
+    const minField = useImperial ? 'mintemp_f' : 'mintemp_c';
+    const maxField = useImperial ? 'maxtemp_f' : 'maxtemp_c';
+    const windValueKph = useImperial ? current.wind_mph * 1.609 : current.wind_kph;
 
-    const city = await reverseGeocode(lat, lon);
+    const city = location?.name ?? 'Unknown';
+
+    const daily = forecast.map((d: any) => ({
+      date: d.date_epoch,
+      temp_min: d.day?.[minField],
+      temp_max: d.day?.[maxField],
+      weather: d.day?.condition?.text ?? 'Clear',
+      moon_phase: toPhaseFraction(d.astro?.moon_phase ?? ''),
+      moon_illumination: Number(d.astro?.moon_illumination ?? 0),
+      sunrise: toEpochFromLocal(d.date_epoch, d.astro?.sunrise ?? '00:00 AM'),
+      sunset: toEpochFromLocal(d.date_epoch, d.astro?.sunset ?? '00:00 PM'),
+      uvi: d.day?.uv ?? 0,
+      humidity: d.day?.avghumidity ?? 0,
+      moonrise: toEpochFromLocal(d.date_epoch, d.astro?.moonrise ?? '00:00 AM'),
+      moonset: toEpochFromLocal(d.date_epoch, d.astro?.moonset ?? '00:00 AM'),
+    }));
 
     const response: WeatherServiceResponse = {
       city,
-      timezoneOffset: json.timezone_offset ?? 0,
+      timezoneOffset: 0,
       current: {
-        temp: json.current.temp,
-        feels: json.current.feels_like,
-        humidity: json.current.humidity,
-        wind: Number((json.current.wind_speed * 3.6).toFixed(1)),
-        uvi: json.current.uvi,
-        weather: json.current.weather?.[0]?.main ?? 'Unknown',
-        sunrise: json.current.sunrise,
-        sunset: json.current.sunset,
-        dewPoint: json.current.dew_point ?? json.current.temp,
+        temp: current?.[tempField],
+        feels: current?.[feelsField],
+        humidity: current?.humidity,
+        wind: Number(windValueKph.toFixed(1)),
+        uvi: current?.uv ?? 0,
+        weather: current?.condition?.text ?? 'Unknown',
+        sunrise: daily[0]?.sunrise ?? 0,
+        sunset: daily[0]?.sunset ?? 0,
+        dewPoint: useImperial ? current?.dewpoint_f : current?.dewpoint_c,
       },
-      hourly: (json.hourly ?? []).slice(0, 24).map((h: any) => ({
-        time: h.dt,
-        temp: h.temp,
-        icon: h.weather?.[0]?.icon ?? '01d',
-        description: h.weather?.[0]?.main ?? 'Clear',
-        pop: h.pop,
-        uvi: h.uvi,
+      hourly: (today?.hour ?? []).slice(0, 24).map((h: any) => ({
+        time: h.time_epoch,
+        temp: h[tempField],
+        icon: h.condition?.icon ?? '',
+        description: h.condition?.text ?? 'Clear',
+        pop: (h.chance_of_rain ?? 0) / 100,
+        uvi: h.uv ?? 0,
       })),
-      daily: (json.daily ?? []).map((d: any) => ({
-        date: d.dt,
-        temp_min: d.temp?.min,
-        temp_max: d.temp?.max,
-        weather: d.weather?.[0]?.main ?? 'Clear',
-        moon_phase: d.moon_phase,
-        moon_illumination: getIllumination(d.moon_phase),
-        sunrise: d.sunrise,
-        sunset: d.sunset,
-        uvi: d.uvi,
-        humidity: d.humidity,
-        moonrise: d.moonrise,
-        moonset: d.moonset,
-      })),
+      daily,
       moon: {
-        phase: json.daily[0].moon_phase,
-        illumination,
-        moonrise: json.daily[0].moonrise,
-        moonset: json.daily[0].moonset,
+        phase: toPhaseFraction(today?.astro?.moon_phase ?? ''),
+        illumination: Number(today?.astro?.moon_illumination ?? 0),
+        moonrise: toEpochFromLocal(today?.date_epoch ?? 0, today?.astro?.moonrise ?? '00:00 AM'),
+        moonset: toEpochFromLocal(today?.date_epoch ?? 0, today?.astro?.moonset ?? '00:00 AM'),
       },
     };
 
     return response;
   } catch (e) {
-    console.warn('Weather API ERROR (handled):', e);
+    console.warn('[WeatherAPI] ERROR:', e);
     return null;
   }
 }

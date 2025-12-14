@@ -1,0 +1,301 @@
+warning: in the working copy of '.env', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'api/WeatherService.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/(tabs)/explore.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/_layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/home.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/modal.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/settings.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ForecastItem.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/HeaderBlock.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/InfoCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ListCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ModalInfoBlock.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/context/SettingsContext.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/hooks/useWeatherData.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/screens/ForecastScreen.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/screens/HomeScreen.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/screens/SettingsScreen.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/services/weatherAPI.ts', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/.env b/.env[m
+[1mindex 539e8c9..deae7fc 100644[m
+[1m--- a/.env[m
+[1m+++ b/.env[m
+[36m@@ -1 +1,2 @@[m
+[31m-EXPO_PUBLIC_OPENWEATHER_API_KEY=c26d9cda3842e850363c2285a2ea2701[m
+[32m+[m[32mEXPO_PUBLIC_OPENWEATHER_API_KEY=c12261c45fb74a829f250718251412[m
+[32m+[m[32mEXPO_PUBLIC_WEATHERAPI_KEY=7196a63bf2ce4e33b7a50940251412[m
+[1mdiff --git a/api/WeatherService.ts b/api/WeatherService.ts[m
+[1mindex 7d60a0d..23d113c 100644[m
+[1m--- a/api/WeatherService.ts[m
+[1m+++ b/api/WeatherService.ts[m
+[36m@@ -1,7 +1,5 @@[m
+[31m-const API_KEY = process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY ?? 'YOUR_API_KEY_HERE';[m
+[31m-const ONECALL_URL = 'https://api.openweathermap.org/data/2.5/onecall';[m
+[31m-const GEO_URL = 'https://api.openweathermap.org/geo/1.0/direct';[m
+[31m-const REV_GEO_URL = 'https://api.openweathermap.org/geo/1.0/reverse';[m
+[32m+[m[32mconst API_KEY = process.env.EXPO_PUBLIC_WEATHERAPI_KEY ?? '';[m
+[32m+[m[32mconst BASE_URL = 'https://api.weatherapi.com/v1';[m
+ [m
+ export type OpenWeatherUnits = 'metric' | 'imperial';[m
+ [m
+[36m@@ -49,109 +47,124 @@[m [mexport type WeatherServiceResponse = {[m
+   };[m
+ };[m
+ [m
+[31m-// 🌙 月亮光照率計算（從 moon_phase 得到百分比）[m
+[31m-export function getIllumination(phase: number): number {[m
+[31m-  if (phase <= 0.5) {[m
+[31m-    return phase * 2 * 100;[m
+[31m-  }[m
+[31m-  return (1 - phase) * 2 * 100;[m
+[31m-}[m
+[31m-[m
+ const ensureApiKey = () => {[m
+[31m-  if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {[m
+[31m-    console.warn([m
+[31m-      '[WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.',[m
+[31m-    );[m
+[32m+[m[32m  if (!API_KEY) {[m
+[32m+[m[32m    console.warn('[WeatherService] Missing WeatherAPI key. Set EXPO_PUBLIC_WEATHERAPI_KEY in .env.');[m
+[32m+[m[32m    return false;[m
+   }[m
+[32m+[m[32m  return true;[m
+ };[m
+ [m
+[31m-// 📍 用搜尋字串找城市座標（Explore 頁）[m
+[31m-export async function searchCity(query: string) {[m
+[31m-  ensureApiKey();[m
+[31m-  if (!query.trim()) return [];[m
+[31m-  const url = `${GEO_URL}?q=${encodeURIComponent(query)}&limit=5&appid=${API_KEY}`;[m
+[31m-  const res = await fetch(url);[m
+[31m-  if (!res.ok) {[m
+[31m-    throw new Error('Failed to search city');[m
+[31m-  }[m
+[31m-  return res.json();[m
+[31m-}[m
+[32m+[m[32mconst phaseMap: Record<string, number> = {[m
+[32m+[m[32m  'New Moon': 0,[m
+[32m+[m[32m  'Waxing Crescent': 0.125,[m
+[32m+[m[32m  'First Quarter': 0.25,[m
+[32m+[m[32m  'Waxing Gibbous': 0.375,[m
+[32m+[m[32m  'Full Moon': 0.5,[m
+[32m+[m[32m  'Waning Gibbous': 0.625,[m
+[32m+[m[32m  'Last Quarter': 0.75,[m
+[32m+[m[32m  'Third Quarter': 0.75,[m
+[32m+[m[32m  'Waning Crescent': 0.875,[m
+[32m+[m[32m};[m
+ [m
+[31m-// 📍 反查城市（Home GPS → city name）[m
+[31m-export async function reverseGeocode(lat: number, lon: number) {[m
+[31m-  ensureApiKey();[m
+[31m-  const url = `${REV_GEO_URL}?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;[m
+[31m-  const res = await fetch(url);[m
+[31m-  if (!res.ok) {[m
+[31m-    throw new Error('Failed to reverse geocode');[m
+[31m-  }[m
+[31m-  const json = await res.json();[m
+[31m-  return json[0]?.name || 'Unknown';[m
+[31m-}[m
+[32m+[m[32mconst toPhaseFraction = (name: string) => phaseMap[name] ?? 0;[m
+ [m
+[31m-// 🌤 主天氣資料（current, hourly, daily）[m
+[31m-export async function getWeather(lat: number, lon: number, units: OpenWeatherUnits = 'metric') {[m
+[31m-  ensureApiKey();[m
+[31m-  const url = `${ONECALL_URL}?lat=${lat}&lon=${lon}&units=${units}&exclude=minutely,alerts&appid=${API_KEY}`;[m
+[32m+[m[32mconst toSecondsFromMidnight = (timeStr: string) => {[m
+[32m+[m[32m  // WeatherAPI returns "07:59 AM" style strings[m
+[32m+[m[32m  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);[m
+[32m+[m[32m  if (!match) return 0;[m
+[32m+[m[32m  let [_, hh, mm, ampm] = match;[m
+[32m+[m[32m  let hour = Number(hh);[m
+[32m+[m[32m  const minute = Number(mm);[m
+[32m+[m[32m  const upper = ampm.toUpperCase();[m
+[32m+[m[32m  if (upper === 'PM' && hour !== 12) hour += 12;[m
+[32m+[m[32m  if (upper === 'AM' && hour === 12) hour = 0;[m
+[32m+[m[32m  return hour * 3600 + minute * 60;[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mconst toEpochFromLocal = (dateEpoch: number, timeStr: string) =>[m
+[32m+[m[32m  dateEpoch + toSecondsFromMidnight(timeStr);[m
+[32m+[m
+[32m+[m[32mexport async function getWeather([m
+[32m+[m[32m  lat: number,[m
+[32m+[m[32m  lon: number,[m
+[32m+[m[32m  units: OpenWeatherUnits = 'metric',[m
+[32m+[m[32m): Promise<WeatherServiceResponse | null> {[m
+[32m+[m[32m  if (!ensureApiKey()) return null;[m
+ [m
+   try {[m
+[32m+[m[32m    const query = `${lat},${lon}`;[m
+[32m+[m[32m    const url = `${BASE_URL}/forecast.json?key=${API_KEY}&q=${encodeURIComponent([m
+[32m+[m[32m      query,[m
+[32m+[m[32m    )}&days=7&aqi=no&alerts=no`;[m
+[32m+[m
+     const res = await fetch(url);[m
+[31m-    if (!res.ok) {[m
+[31m-      throw new Error('Failed to fetch weather data');[m
+[31m-    }[m
+[32m+[m[32m    if (!res.ok) throw new Error('WeatherAPI request failed');[m
+[32m+[m
+     const json = await res.json();[m
+[32m+[m[32m    const location = json.location;[m
+[32m+[m[32m    const current = json.current;[m
+[32m+[m[32m    const forecast = json.forecast?.forecastday ?? [];[m
+[32m+[m[32m    const today = forecast[0];[m
+[32m+[m
+[32m+[m[32m    const useImperial = units === 'imperial';[m
+[32m+[m[32m    const tempField = useImperial ? 'temp_f' : 'temp_c';[m
+[32m+[m[32m    const feelsField = useImperial ? 'feelslike_f' : 'feelslike_c';[m
+[32m+[m[32m    const minField = useImperial ? 'mintemp_f' : 'mintemp_c';[m
+[32m+[m[32m    const maxField = useImperial ? 'maxtemp_f' : 'maxtemp_c';[m
+[32m+[m[32m    const windValueKph = useImperial ? current.wind_mwarning: in the working copy of '.env', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'api/WeatherService.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/(tabs)/explore.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/_layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/home.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/modal.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/settings.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ForecastItem.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/HeaderBlock.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/InfoCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ListCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ModalInfoBlock.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/context/SettingsContext.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/hooks/useWeatherData.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/screens/ForecastScreen.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/screens/HomeScreen.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/screens/SettingsScreen.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/services/weatherAPI.ts', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/.env b/.env[m
+[1mindex 539e8c9..deae7fc 100644[m
+[1m--- a/.env[m
+[1m+++ b/.env[m
+[36m@@ -1 +1,2 @@[m
+[31m-EXPO_PUBLIC_OPENWEATHER_API_KEY=c26d9cda3842e850363c2285a2ea2701[m
+[32m+[m[32mEXPO_PUBLIC_OPENWEATHER_API_KEY=c12261c45fb74a829f250718251412[m
+[32m+[m[32mEXPO_PUBLIC_WEATHERAPI_KEY=7196a63bf2ce4e33b7a50940251412[m
+[1mdiff --git a/api/WeatherService.ts b/api/WeatherService.ts[m
+[1mindex 7d60a0d..23d113c 100644[m
+[1m--- a/api/WeatherService.ts[m
+[1m+++ b/api/WeatherService.ts[m
+[36m@@ -1,7 +1,5 @@[m
+[31m-const API_KEY = process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY ?? 'YOUR_API_KEY_HERE';[m
+[31m-const ONECALL_URL = 'https://api.openweathermap.org/data/2.5/onecall';[m
+[31m-const GEO_URL = 'https://api.openweathermap.org/geo/1.0/direct';[m
+[31m-const REV_GEO_URL = 'https://api.openweathermap.org/geo/1.0/reverse';[m
+[32m+[m[32mconst API_KEY = process.env.EXPO_PUBLIC_WEATHERAPI_KEY ?? '';[m
+[32m+[m[32mconst BASE_URL = 'https://api.weatherapi.com/v1';[m
+ [m
+ export type OpenWeatherUnits = 'metric' | 'imperial';[m
+ [m
+[36m@@ -49,109 +47,124 @@[m [mexport type WeatherServiceResponse = {[m
+   };[m
+ };[m
+ [m
+[31m-// 🌙 月亮光照率計算（從 moon_phase 得到百分比）[m
+[31m-export function getIllumination(phase: number): number {[m
+[31m-  if (phase <= 0.5) {[m
+[31m-    return phase * 2 * 100;[m
+[31m-  }[m
+[31m-  return (1 - phase) * 2 * 100;[m
+[31m-}[m
+[31m-[m
+ const ensureApiKey = () => {[m
+[31m-  if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {[m
+[31m-    console.warn([m
+[31m-      '[WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY or update WeatherService.ts.',[m
+[31m-    );[m
+[32m+[m[32m  if (!API_KEY) {[m
+[32m+[m[32m    console.warn('[WeatherService] Missing WeatherAPI key. Set EXPO_PUBLIC_WEATHERAPI_KEY in .env.');[m
+[32m+[m[32m    return false;[m
+   }[m
+[32m+[m[32m  return true;[m
+ };[m
+ [m
+[31m-// 📍 用搜尋字串找城市座標（Explore 頁）[m
+[31m-export async function searchCity(query: string) {[m
+[31m-  ensureApiKey();[m
+[31m-  if (!query.trim()) return [];[m
+[31m-  const url = `${GEO_URL}?q=${encodeURIComponent(query)}&limit=5&appid=${API_KEY}`;[m
+[31m-  const res = await fetch(url);[m
+[31m-  if (!res.ok) {[m
+[31m-    throw new Error('Failed to search city');[m
+[31m-  }[m
+[31m-  return res.json();[m
+[31m-}[m
+[32m+[m[32mconst phaseMap: Record<string, number> = {[m
+[32m+[m[32m  'New Moon': 0,[m
+[32m+[m[32m  'Waxing Crescent': 0.125,[m
+[32m+[m[32m  'First Quarter': 0.25,[m
+[32m+[m[32m  'Waxing Gibbous': 0.375,[m
+[32m+[m[32m  'Full Moon': 0.5,[m
+[32m+[m[32m  'Waning Gibbous': 0.625,[m
+[32m+[m[32m  'Last Quarter': 0.75,[m
+[32m+[m[32m  'Third Quarter': 0.75,[m
+[32m+[m[32m  'Waning Crescent': 0.875,[m
+[32m+[m[32m};[m
+ [m
+[31m-// 📍 反查城市（Home GPS → city name）[m
+[31m-export async function reverseGeocode(lat: number, lon: number) {[m
+[31m-  ensureApiKey();[m
+[31m-  const url = `${REV_GEO_URL}?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;[m
+[31m-  const res = await fetch(url);[m
+[31m-  if (!res.ok) {[m
+[31m-    throw new Error('Failed to reverse geocode');[m
+[31m-  }[m
+[31m-  const json = await res.json();[m
+[31m-  return json[0]?.name || 'Unknown';[m
+[31m-}[m
+[32m+[m[32mconst toPhaseFraction = (name: string) => phaseMap[name] ?? 0;[m
+ [m
+[31m-// 🌤 主天氣資料（current, hourly, daily）[m
+[31m-export async function getWeather(lat: number, lon: number, units: OpenWeatherUnits = 'metric') {[m
+[31m-  ensureApiKey();[m
+[31m-  const url = `${ONECALL_URL}?lat=${lat}&lon=${lon}&units=${units}&exclude=minutely,alerts&appid=${API_KEY}`;[m
+[32m+[m[32mconst toSecondsFromMidnight = (timeStr: string) => {[m
+[32m+[m[32m  // WeatherAPI returns "07:59 AM" style strings[m
+[32m+[m[32m  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);[m
+[32m+[m[32m  if (!match) return 0;[m
+[32m+[m[32m  let [_, hh, mm, ampm] = match;[m
+[32m+[m[32m  let hour = Number(hh);[m
+[32m+[m[32m  const minute = Number(mm);[m
+[32m+[m[32m  const upper = ampm.toUpperCase();[m
+[32m+[m[32m  if (upper === 'PM' && hour !== 12) hour += 12;[m
+[32m+[m[32m  if (upper === 'AM' && hour === 12) hour = 0;[m
+[32m+[m[32m  return hour * 3600 + minute * 60;[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mconst toEpochFromLocal = (dateEpoch: number, timeStr: string) =>[m
+[32m+[m[32m  dateEpoch + toSecondsFromMidnight(timeStr);[m
+[32m+[m
+[32m+[m[32mexport async function getWeather([m
+[32m+[m[32m  lat: number,[m
+[32m+[m[32m  lon: number,[m
+[32m+[m[32m  units: OpenWeatherUnits = 'metric',[m
+[32m+[m[32m): Promise<WeatherServiceResponse | null> {[m
+[32m+[m[32m  if (!ensureApiKey()) return null;[m
+ [m
+   try {[m
+[32m+[m[32m    const query = `${lat},${lon}`;[m
+[32m+[m[32m    const url = `${BASE_URL}/forecast.json?key=${API_KEY}&q=${encodeURIComponent([m
+[32m+[m[32m      query,[m
+[32m+[m[32m    )}&days=7&aqi=no&alerts=no`;[m
+[32m+[m
+     const res = await fetch(url);[m
+[31m-    if (!res.ok) {[m
+[31m-      throw new Error('Failed to fetch weather data');[m
+[31m-    }[m
+[32m+[m[32m    if (!res.ok) throw new Error('WeatherAPI request failed');[m
+[32m+[m
+     const json = await res.json();[m
+[32m+[m[32m    const location = json.location;[m
+[32m+[m[32m    const current = json.current;[m
+[32m+[m[32m    const forecast = json.forecast?.forecastday ?? [];[m
+[32m+[m[32m    const today = forecast[0];[m
+[32m+[m
+[32m+[m[32m    const useImperial = units === 'imperial';[m
+[32m+[m[32m    const tempField = useImperial ? 'temp_f' : 'temp_c';[m
+[32m+[m[32m    const feelsField = useImperial ? 'feelslike_f' : 'feelslike_c';[m
+[32m+[m[32m    const minField = useImperial ? 'mintemp_f' : 'mintemp_c';[m
+[32m+[m[32m    const maxField = useImperial ? 'maxtemp_f' : 'maxtemp_c';[m
+[32m+[m[32m    const windValueKph = useImperial ? current.wind_m

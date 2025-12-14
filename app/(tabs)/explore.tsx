@@ -13,8 +13,9 @@ import { useSettings } from '../../src/context/SettingsContext';
 const CARD_COLORS = [MoonSenseColors.MoonLavender, MoonSenseColors.MistBlue, MoonSenseColors.SoftIndigo];
 
 const ExploreScreen = () => {
-  const { unit } = useSettings();
+  const { unit, softLightMode } = useSettings();
   const listRef = useRef<FlatList<any>>(null);
+  const styles = useMemo(() => createStyles(softLightMode), [softLightMode]);
   useScrollToTop(listRef);
   useFocusEffect(
     React.useCallback(() => {
@@ -182,11 +183,11 @@ const ExploreScreen = () => {
       ) : null}
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={18} color={MoonSenseColors.OrbitGrey} style={styles.searchIcon} />
+        <Ionicons name="search-outline" size={18} color={styles.searchIconColor.color} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search for a city..."
-          placeholderTextColor={MoonSenseColors.OrbitGrey}
+          placeholderTextColor={styles.placeholderColor.color}
           value={query}
           onChangeText={setQuery}
         />
@@ -221,7 +222,7 @@ const ExploreScreen = () => {
             data={searchResults}
             keyExtractor={item => item.id}
             renderItem={({ item }) => (
-              <ListCard city={item.city} temperature={item.temp} icon={item.icon} backgroundColor={item.color} />
+              <ListCard city={item.city} temperature={item.temp} icon={item.icon} backgroundColor={item.color} softLightMode={softLightMode} />
             )}
             ListEmptyComponent={
               <Text style={[styles.loadingLabel, { textAlign: 'center', marginTop: 20 }]}>
@@ -241,9 +242,9 @@ const ExploreScreen = () => {
           ref={listRef}
           data={filteredCities}
           keyExtractor={item => item.city}
-          renderItem={({ item }) => (
-            <ListCard city={item.city} temperature={item.temp} icon={item.icon} backgroundColor={item.color} />
-          )}
+            renderItem={({ item }) => (
+              <ListCard city={item.city} temperature={item.temp} icon={item.icon} backgroundColor={item.color} softLightMode={softLightMode} />
+            )}
           contentContainerStyle={styles.listContainer}
         />
       )}
@@ -251,95 +252,106 @@ const ExploreScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: MoonSenseColors.LunarGlow,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: MoonSenseColors.NightGrey,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 10,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MoonSenseColors.MistBlue,
-    borderRadius: 18,
-    marginHorizontal: 16,
-    paddingHorizontal: 16,
-    marginVertical: 10,
-    height: 50,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: MoonSenseColors.NightGrey,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 16,
-    marginBottom: 10,
-  },
-  filterChip: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(73,74,87,0.2)',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
-  filterChipActive: {
-    backgroundColor: MoonSenseColors.CosmicPurple,
-    borderColor: MoonSenseColors.CosmicPurple,
-  },
-  filterLabel: {
-    fontSize: 12,
-    color: MoonSenseColors.OrbitGrey,
-    textTransform: 'uppercase',
-  },
-  filterLabelActive: {
-    color: '#fff',
-  },
-  listContainer: {
-    paddingTop: 10,
-    paddingBottom: 40,
-  },
-  loadingState: {
-    marginTop: 40,
-    alignItems: 'center',
-  },
-  loadingLabel: {
-    marginTop: 8,
-    color: MoonSenseColors.OrbitGrey,
-  },
-  statusBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 10,
-    borderRadius: 14,
-    backgroundColor: '#F3EDFF',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: MoonSenseColors.CosmicPurple,
-    marginRight: 8,
-  },
-  statusLabel: {
-    flex: 1,
-    fontSize: 13,
-    color: MoonSenseColors.NightGrey,
-  },
-});
+const createStyles = (softLightMode: boolean) => {
+  const textColor = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
+  const mutedColor = softLightMode ? 'rgba(255,255,255,0.75)' : MoonSenseColors.OrbitGrey;
+  const borderColor = softLightMode ? 'rgba(255,255,255,0.15)' : 'rgba(73,74,87,0.2)';
+  const searchBg = softLightMode ? '#5A5B68' : MoonSenseColors.MistBlue;
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: textColor,
+      paddingHorizontal: 24,
+      paddingTop: 40,
+      paddingBottom: 10,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: searchBg,
+      borderRadius: 18,
+      marginHorizontal: 16,
+      paddingHorizontal: 16,
+      marginVertical: 10,
+      height: 50,
+    },
+    searchIcon: {
+      marginRight: 10,
+    },
+    searchIconColor: { color: mutedColor },
+    placeholderColor: { color: mutedColor },
+    searchInput: {
+      flex: 1,
+      fontSize: 16,
+      color: textColor,
+      borderWidth: 0,
+      outlineStyle: 'none',
+      backgroundColor: 'transparent',
+    },
+    filterRow: {
+      flexDirection: 'row',
+      gap: 10,
+      paddingHorizontal: 16,
+      marginBottom: 10,
+    },
+    filterChip: {
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor,
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+    },
+    filterChipActive: {
+      backgroundColor: MoonSenseColors.CosmicPurple,
+      borderColor: MoonSenseColors.CosmicPurple,
+    },
+    filterLabel: {
+      fontSize: 12,
+      color: mutedColor,
+      textTransform: 'uppercase',
+    },
+    filterLabelActive: {
+      color: '#fff',
+    },
+    listContainer: {
+      paddingTop: 10,
+      paddingBottom: 40,
+    },
+    loadingState: {
+      marginTop: 40,
+      alignItems: 'center',
+    },
+    loadingLabel: {
+      marginTop: 8,
+      color: mutedColor,
+    },
+    statusBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 16,
+      marginBottom: 12,
+      padding: 10,
+      borderRadius: 14,
+      backgroundColor: softLightMode ? '#3A3B46' : '#F3EDFF',
+    },
+    statusDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: MoonSenseColors.CosmicPurple,
+      marginRight: 8,
+    },
+    statusLabel: {
+      flex: 1,
+      fontSize: 13,
+      color: textColor,
+    },
+  });
+};
 
 export default ExploreScreen;

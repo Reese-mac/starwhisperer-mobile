@@ -11,16 +11,15 @@ const SettingsScreen = () => {
     city,
     unit,
     autoLocate,
-    backgroundSound,
     softLightMode,
     setCityById,
     setUnit,
     setAutoLocate,
-    setBackgroundSound,
     setSoftLightMode,
   } = useSettings();
   const [searchText, setSearchText] = useState('');
   const scrollRef = useRef<ScrollView>(null);
+  const styles = useMemo(() => createStyles(softLightMode), [softLightMode]);
   useScrollToTop(scrollRef);
   useFocusEffect(
     React.useCallback(() => {
@@ -88,7 +87,7 @@ const SettingsScreen = () => {
 
         {/* Interface Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Interface Settings</Text>
+          <Text style={styles.sectionTitle}>Dark Mode</Text>
           <View style={styles.settingRow}>
             <Text style={styles.settingText}>Units (°C / °F)</Text>
             <Switch
@@ -96,15 +95,6 @@ const SettingsScreen = () => {
               thumbColor={MoonSenseColors.MoonWhite}
               onValueChange={value => setUnit(value ? 'celsius' : 'fahrenheit')}
               value={unit === 'celsius'}
-            />
-          </View>
-          <View style={styles.settingRow}>
-            <Text style={styles.settingText}>Background Sound</Text>
-            <Switch
-              trackColor={{ false: MoonSenseColors.NightGrey, true: MoonSenseColors.CosmicPurple }}
-              thumbColor={MoonSenseColors.MoonWhite}
-              onValueChange={setBackgroundSound}
-              value={backgroundSound}
             />
           </View>
           <View style={styles.settingRow}>
@@ -130,90 +120,97 @@ const SettingsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F7F7FF',
-    paddingTop: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: MoonSenseColors.NightGrey,
-    paddingHorizontal: 24,
-    marginBottom: 20,
-  },
-  section: {
-    marginBottom: 30,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: MoonSenseColors.NightGrey,
-    marginBottom: 15,
-  },
-  subsectionTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: MoonSenseColors.NightGrey,
-    marginTop: 15,
-    marginBottom: 10,
-  },
-  searchBarContainer: {
-    backgroundColor: MoonSenseColors.MistBlue,
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    marginBottom: 10,
-  },
-  searchInput: {
-    height: 40,
-    fontSize: 16,
-    color: MoonSenseColors.NightGrey,
-  },
-  cityItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
-  },
-  cityItemActive: {
-    backgroundColor: 'rgba(108,74,255,0.08)',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-  },
-  cityText: {
-    fontSize: 16,
-    color: MoonSenseColors.NightGrey,
-  },
-  cityTextActive: {
-    fontWeight: '600',
-  },
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
-  },
-  settingText: {
-    fontSize: 16,
-    color: MoonSenseColors.NightGrey,
-  },
-  brandInfo: {
-    fontSize: 14,
-    color: MoonSenseColors.NightGrey,
-    marginBottom: 5,
-  },
-  cosmicMoodPlaceholder: {
-    fontSize: 14,
-    color: MoonSenseColors.NightGrey,
-    fontStyle: 'italic',
-    marginTop: 15,
-  },
-  loadingText: {
-    color: MoonSenseColors.NightGrey,
-  },
-});
+const createStyles = (softLightMode: boolean) => {
+  const textColor = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
+  const borderColor = softLightMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: softLightMode ? MoonSenseColors.NightGrey : '#F7F7FF',
+      paddingTop: 20,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: textColor,
+      paddingHorizontal: 24,
+      marginBottom: 20,
+    },
+    section: {
+      marginBottom: 30,
+      paddingHorizontal: 24,
+    },
+    sectionTitle: {
+      fontSize: 22,
+      fontWeight: 'bold',
+      color: textColor,
+      marginBottom: 15,
+    },
+    subsectionTitle: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: textColor,
+      marginTop: 15,
+      marginBottom: 10,
+    },
+    searchBarContainer: {
+      backgroundColor: softLightMode ? '#5A5B68' : MoonSenseColors.MistBlue,
+      borderRadius: 12,
+      paddingHorizontal: 15,
+      marginBottom: 10,
+    },
+    searchInput: {
+      height: 40,
+      fontSize: 16,
+      color: textColor,
+      borderWidth: 0,
+      outlineStyle: 'none',
+      backgroundColor: 'transparent',
+    },
+    cityItem: {
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: borderColor,
+    },
+    cityItemActive: {
+      backgroundColor: 'rgba(108,74,255,0.08)',
+      borderRadius: 10,
+      paddingHorizontal: 12,
+    },
+    cityText: {
+      fontSize: 16,
+      color: textColor,
+    },
+    cityTextActive: {
+      fontWeight: '600',
+    },
+    settingRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: borderColor,
+    },
+    settingText: {
+      fontSize: 16,
+      color: textColor,
+    },
+    brandInfo: {
+      fontSize: 14,
+      color: textColor,
+      marginBottom: 5,
+    },
+    cosmicMoodPlaceholder: {
+      fontSize: 14,
+      color: textColor,
+      fontStyle: 'italic',
+      marginTop: 15,
+    },
+    loadingText: {
+      color: textColor,
+    },
+  });
+};
 
 export default SettingsScreen;

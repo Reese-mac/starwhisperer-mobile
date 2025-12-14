@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { CITY_OPTIONS, CityOption } from '../constants/cities';
 
@@ -9,12 +10,10 @@ type SettingsState = {
   city: CityOption;
   unit: TemperatureUnit;
   autoLocate: boolean;
-  backgroundSound: boolean;
   softLightMode: boolean;
   setCityById: (id: string) => void;
   setUnit: (unit: TemperatureUnit) => void;
   setAutoLocate: (value: boolean) => void;
-  setBackgroundSound: (value: boolean) => void;
   setSoftLightMode: (value: boolean) => void;
 };
 
@@ -26,7 +25,6 @@ const STORAGE_KEYS = {
   CITY: 'settings_city_id',
   UNIT: 'settings_unit',
   AUTO_LOCATION: 'settings_auto_location',
-  BACKGROUND_SOUND: 'settings_background_sound',
   SOFT_LIGHT_MODE: 'settings_soft_light_mode',
 };
 
@@ -35,17 +33,16 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
   const [cityId, setCityId] = useState(defaultCity.id);
   const [unit, setUnitState] = useState<TemperatureUnit>('celsius');
   const [autoLocate, setAutoLocateState] = useState(true);
-  const [backgroundSound, setBackgroundSoundState] = useState(false);
   const [softLightMode, setSoftLightModeState] = useState(false);
+  const [locationCity, setLocationCity] = useState<CityOption | null>(null);
 
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [storedCity, storedUnit, storedAuto, storedBg, storedSoft] = await Promise.all([
+        const [storedCity, storedUnit, storedAuto, storedSoft] = await Promise.all([
           AsyncStorage.getItem(STORAGE_KEYS.CITY),
           AsyncStorage.getItem(STORAGE_KEYS.UNIT),
           AsyncStorage.getItem(STORAGE_KEYS.AUTO_LOCATION),
-          AsyncStorage.getItem(STORAGE_KEYS.BACKGROUND_SOUND),
           AsyncStorage.getItem(STORAGE_KEYS.SOFT_LIGHT_MODE),
         ]);
 
@@ -57,9 +54,6 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         }
         if (storedAuto !== null) {
           setAutoLocateState(storedAuto === 'true');
-        }
-        if (storedBg !== null) {
-          setBackgroundSoundState(storedBg === 'true');
         }
         if (storedSoft !== null) {
           setSoftLightModeState(storedSoft === 'true');
@@ -81,6 +75,9 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
 
   const setCityById = useCallback((id: string) => {
     if (!CITY_OPTIONS.some(option => option.id === id)) return;
+    // If the user manually selects a city, turn off auto-locate so the choice sticks.
+    setAutoLocateState(false);
+    persist(STORAGE_KEYS.AUTO_LOCATION, 'false');
     setCityId(id);
     persist(STORAGE_KEYS.CITY, id);
   }, [persist]);
@@ -95,32 +92,68 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     persist(STORAGE_KEYS.AUTO_LOCATION, value.toString());
   }, [persist]);
 
-  const setBackgroundSound = useCallback((value: boolean) => {
-    setBackgroundSoundState(value);
-    persist(STORAGE_KEYS.BACKGROUND_SOUND, value.toString());
-  }, [persist]);
-
   const setSoftLightMode = useCallback((value: boolean) => {
     setSoftLightModeState(value);
     persist(STORAGE_KEYS.SOFT_LIGHT_MODE, value.toString());
   }, [persist]);
 
   const value = useMemo<SettingsState>(
-    () => ({
+   () => ({
       ready,
-      city: CITY_OPTIONS.find(option => option.id === cityId) ?? defaultCity,
+      city:
+        (autoLocate && locationCity) || CITY_OPTIONS.find(option => option.id === cityId) || defaultCity,
       unit,
       autoLocate,
-      backgroundSound,
       softLightMode,
       setCityById,
       setUnit,
       setAutoLocate,
-      setBackgroundSound,
       setSoftLightMode,
     }),
-    [ready, cityId, unit, autoLocate, backgroundSound, softLightMode, setCityById, setUnit, setAutoLocate, setBackgroundSound, setSoftLightMode],
+    [ready, cityId, unit, autoLocate, softLightMode, locationCity, setCityById, setUnit, setAutoLocate, setSoftLightMode],
   );
+
+  useEffect(() => {
+    if (!autoLocate) {
+      setLocationCity(null);
+      return;
+    }
+
+    let cancelled = false;
+    const fetchLocation = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.warn('Location permission denied, falling back to selected city.');
+          setAutoLocate(false);
+          return;
+        }
+        const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Lowest });
+        const geocode = await Location.reverseGeocodeAsync({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+        if (cancelled) return;
+        const first = geocode?.[0];
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local';
+        setLocationCity({
+          id: 'auto-location',
+          name: first?.city || first?.subregion || 'Current Location',
+          country: first?.country || '',
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          timezone: tz,
+        });
+      } catch (error) {
+        console.warn('Failed to get current location, using selected city.', error);
+      }
+    };
+
+    fetchLocation();
+    return () => {
+      cancelled = true;
+    };
+  }, [autoLocate, setAutoLocate]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 };

@@ -17,17 +17,22 @@ export type ListCardProps = {
   temperature: string;
   icon: string;
   backgroundColor: string;
+  softLightMode?: boolean;
 };
 
-const ListCard = ({ city, temperature, icon, backgroundColor }: ListCardProps) => {
+const ListCard = ({ city, temperature, icon, backgroundColor, softLightMode = false }: ListCardProps) => {
   const resolvedIcon = iconMap[icon] || 'cloud-outline';
+  const cardBg = softLightMode ? 'rgba(255,255,255,0.08)' : backgroundColor;
+  const textColor = softLightMode ? '#fff' : MoonSenseColors.NightGrey;
+  const borderColor = softLightMode ? 'rgba(255,255,255,0.16)' : 'transparent';
+  const iconColor = textColor;
   return (
-    <View style={[styles.container, { backgroundColor }]}>
+    <View style={[styles.container, { backgroundColor: cardBg, borderColor, borderWidth: softLightMode ? 1 : 0 }]}>
       <View>
-        <Text style={styles.city}>{city}</Text>
-        <Text style={styles.temperature}>{temperature}</Text>
+        <Text style={[styles.city, { color: textColor }]}>{city}</Text>
+        <Text style={[styles.temperature, { color: textColor }]}>{temperature}</Text>
       </View>
-      <Ionicons name={resolvedIcon} size={26} color={MoonSenseColors.NightGrey} />
+      <Ionicons name={resolvedIcon} size={26} color={iconColor} />
     </View>
   );
 };

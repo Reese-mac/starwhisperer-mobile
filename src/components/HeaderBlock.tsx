@@ -13,6 +13,7 @@ interface HeaderBlockProps {
   onLongMoonPress: () => void;
   onCityPress: () => void;
   onSettingsPress: () => void;
+  softLightMode?: boolean;
 }
 
 const HeaderBlock = ({
@@ -24,46 +25,56 @@ const HeaderBlock = ({
   onLongMoonPress,
   onCityPress,
   onSettingsPress,
+  softLightMode = false,
 }: HeaderBlockProps) => {
+  const gradientColors = softLightMode
+    ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']
+    : [MoonSenseColors.CosmicPurple, MoonSenseColors.MoonLavender];
+  const textColor = softLightMode ? '#fff' : '#fff';
+  const badgeBg = softLightMode ? 'rgba(255,255,255,0.14)' : MoonSenseColors.MoonWhite;
+  const badgeText = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
+  const containerBg = softLightMode ? 'rgba(255,255,255,0.06)' : undefined;
+  const containerBorder = softLightMode ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' } : null;
+
   return (
     <LinearGradient
-      colors={[MoonSenseColors.CosmicPurple, MoonSenseColors.MoonLavender]}
+      colors={gradientColors}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={styles.container}
+      style={[styles.container, containerBg ? { backgroundColor: containerBg } : null, containerBorder]}
     >
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={onCityPress} activeOpacity={0.8}>
-          <Text style={styles.locationLabel}>Observing</Text>
+          <Text style={[styles.locationLabel, { color: textColor, opacity: 0.7 }]}>Observing</Text>
           <View style={styles.cityRow}>
-            <Ionicons name="location-outline" size={18} color="#fff" />
-            <Text style={styles.city}>{city}</Text>
+            <Ionicons name="location-outline" size={18} color={textColor} />
+            <Text style={[styles.city, { color: textColor }]}>{city}</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={onSettingsPress} accessibilityRole="button">
-          <Ionicons name="settings-outline" size={22} color="#fff" />
+          <Ionicons name="settings-outline" size={22} color={textColor} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.tempRow}>
-        <Text style={styles.temperature}>{temperature}°</Text>
-        <Text style={styles.description}>{description}</Text>
+        <Text style={[styles.temperature, { color: textColor }]}>{temperature}°</Text>
+        <Text style={[styles.description, { color: textColor }]}>{description}</Text>
       </View>
 
       <TouchableOpacity
-        style={styles.moonBadge}
+        style={[styles.moonBadge, { backgroundColor: badgeBg }]}
         onPress={onMoonPress}
         onLongPress={onLongMoonPress}
         delayLongPress={240}
         accessibilityRole="button"
       >
-        <Ionicons name="moon" size={18} color={MoonSenseColors.CosmicPurple} />
-        <Text style={styles.moonBadgeText}>Hold for lunar whisper</Text>
+        <Ionicons name="moon" size={18} color={softLightMode ? '#fff' : MoonSenseColors.CosmicPurple} />
+        <Text style={[styles.moonBadgeText, { color: badgeText }]}>&nbsp;Hold for lunar whisper</Text>
       </TouchableOpacity>
 
       <View style={styles.whisperBox}>
-        <Ionicons name="sparkles-outline" size={16} color="#fff" />
-        <Text style={styles.cosmicWhisper}>{cosmicWhisper}</Text>
+        <Ionicons name="sparkles-outline" size={16} color={textColor} />
+        <Text style={[styles.cosmicWhisper, { color: textColor }]}>{cosmicWhisper}</Text>
       </View>
 
     </LinearGradient>

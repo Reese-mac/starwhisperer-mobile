@@ -12,9 +12,9 @@ const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   moon: 'moon-outline',
 };
 
-const ForecastIcon = ({ icon }: { icon: string }) => {
+const ForecastIcon = ({ icon, color }: { icon: string; color: string }) => {
   const resolvedIcon = iconMap[icon] || 'cloud-outline';
-  return <Ionicons name={resolvedIcon} size={22} color={MoonSenseColors.NightGrey} />;
+  return <Ionicons name={resolvedIcon} size={22} color={color} />;
 };
 
 export type ForecastItemProps = {
@@ -23,20 +23,27 @@ export type ForecastItemProps = {
   temperature: string;
   badge?: string;
   hint?: string;
+  softLightMode?: boolean;
 };
 
-const ForecastItem = ({ time, icon, temperature, badge, hint }: ForecastItemProps) => {
+const ForecastItem = ({ time, icon, temperature, badge, hint, softLightMode = false }: ForecastItemProps) => {
+  const cardBg = softLightMode ? 'rgba(255,255,255,0.08)' : MoonSenseColors.MistBlue;
+  const textColor = softLightMode ? '#fff' : MoonSenseColors.NightGrey;
+  const badgeBg = softLightMode ? 'rgba(255,255,255,0.15)' : '#ffffff';
+  const hintColor = softLightMode ? 'rgba(255,255,255,0.7)' : MoonSenseColors.NightGrey;
+  const borderColor = softLightMode ? 'rgba(255,255,255,0.2)' : 'transparent';
+  const iconColor = softLightMode ? '#FFFFFF' : MoonSenseColors.NightGrey;
   return (
-    <View style={styles.container}>
-      <Text style={styles.time}>{time}</Text>
+    <View style={[styles.container, { backgroundColor: cardBg, borderColor, borderWidth: softLightMode ? 1 : 0 }]}>
+      <Text style={[styles.time, { color: textColor }]}>{time}</Text>
       {badge ? (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{badge}</Text>
+        <View style={[styles.badge, { backgroundColor: badgeBg }]}>
+          <Text style={[styles.badgeText, { color: textColor }]}>{badge}</Text>
         </View>
       ) : null}
-      <ForecastIcon icon={icon} />
-      <Text style={styles.temperature}>{temperature}°</Text>
-      {hint ? <Text style={styles.hint}>{hint}</Text> : null}
+      <ForecastIcon icon={icon} color={iconColor} />
+      <Text style={[styles.temperature, { color: textColor }]}>{temperature}°</Text>
+      {hint ? <Text style={[styles.hint, { color: hintColor }]}>{hint}</Text> : null}
     </View>
   );
 };
@@ -46,7 +53,6 @@ const styles = StyleSheet.create({
     width: 70,
     height: 134,
     borderRadius: 32,
-    backgroundColor: MoonSenseColors.MistBlue,
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingVertical: 12,
