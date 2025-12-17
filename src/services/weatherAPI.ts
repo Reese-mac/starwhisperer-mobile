@@ -24,6 +24,7 @@ export type MoonPhaseEntry = {
   energySuggestion: string;
   riseTime: string;
   setTime: string;
+  phaseValue?: number;
 };
 
 export type MoonDetails = {
@@ -278,6 +279,7 @@ export const fetchMoonPhases = async (city: CityOption): Promise<MoonPhaseEntry[
       energySuggestion: meta.energy,
       riseTime: formatPhaseTime(day.moonrise),
       setTime: formatPhaseTime(day.moonset),
+      phaseValue: day.moon_phase,
     };
   });
 };

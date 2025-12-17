@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MoonSenseColors } from '../constants/colors';
 
@@ -14,9 +14,9 @@ const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   'sun-rain': 'rainy-outline',
 };
 
-const CardIcon = ({ icon, color, background }: { icon: string; color: string; background: string }) => (
-  <View style={[styles.iconPlaceholder, { backgroundColor: background }]}>
-    <Ionicons name={iconMap[icon] || 'planet-outline'} size={20} color={color} />
+const CardIcon = ({ icon }: { icon: string }) => (
+  <View style={styles.iconContainer}>
+    <Ionicons name={iconMap[icon] || 'planet-outline'} size={20} color={MoonSenseColors.OnSurfaceMedium} />
   </View>
 );
 
@@ -24,171 +24,72 @@ export type InfoCardProps = {
   title: string;
   value: string;
   icon: string;
-  backgroundColor: string;
-  type: 'humidity' | 'feelsLike' | 'wind' | 'uvIndex' | 'airQuality' | 'pressure' | 'sunriseSunset' | 'airTemp' | 'waterTemp'; // Added new types
-  expandedData?: any; // To pass the expanded content from API
-  softLightMode?: boolean;
 };
 
-const InfoCard = ({ title, value, icon, backgroundColor, type, expandedData, softLightMode = false }: InfoCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const animatedHeight = useRef(new Animated.Value(120)).current; // Start with a sane default height
-  const [initialHeight, setInitialHeight] = useState(0);
-  const [expandedContentHeight, setExpandedContentHeight] = useState(0);
-  const cardBg = softLightMode ? 'rgba(255,255,255,0.12)' : backgroundColor;
-  const textColor = softLightMode ? '#EDECF7' : MoonSenseColors.NightGrey;
-  const iconBg = softLightMode ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.5)';
-  const iconColor = textColor;
-  const dividerColor = softLightMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
-  const borderColor = softLightMode ? 'rgba(255,255,255,0.2)' : 'transparent';
+const splitValue = (raw: string) => {
+  const trimmed = raw.trim();
+  const match = trimmed.match(/^(-?\d+(?:\.\d+)?)(.*)$/);
+  if (!match) return { number: trimmed, unit: '' };
+  return { number: match[1], unit: match[2] ?? '' };
+};
 
-  useEffect(() => {
-    if (isExpanded) {
-      Animated.timing(animatedHeight, {
-        toValue: initialHeight + expandedContentHeight, // Animate to content height + padding
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    } else {
-      Animated.timing(animatedHeight, {
-        toValue: initialHeight, // Animate back to initial height
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [isExpanded, animatedHeight, initialHeight, expandedContentHeight]);
-
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const renderExpandedContent = () => {
-    if (!isExpanded || !expandedData) return null;
-
-    switch (type) {
-      case 'airTemp':
-        return (
-          <View style={[styles.expandedContent, { borderTopColor: dividerColor }]}>
-            <Text style={[styles.expandedTitle, { color: textColor }]}>Today&apos;s Temperature Trend:</Text>
-            <Text style={[styles.expandedText, { color: textColor }]}>{expandedData.indicator}</Text>
-            <Text style={[styles.expandedText, { color: textColor }]}>Hourly: {expandedData.hourly.join(', ')}</Text>
-          </View>
-        );
-      case 'waterTemp':
-        return (
-          <View style={[styles.expandedContent, { borderTopColor: dividerColor }]}>
-            <Text style={[styles.expandedTitle, { color: textColor }]}>Water Temperature:</Text>
-            <Text style={[styles.expandedText, { color: textColor }]}>Current: {expandedData.current}</Text>
-            <Text style={[styles.expandedText, { color: textColor }]}>Trend: {expandedData.trend}</Text>
-            <Text style={[styles.expandedText, { color: textColor }]}>Suggestion: {expandedData.suggestion}</Text>
-          </View>
-        );
-      case 'feelsLike':
-        return (
-          <View style={[styles.expandedContent, { borderTopColor: dividerColor }]}>
-            <Text style={[styles.expandedTitle, { color: textColor }]}>Today&apos;s Emotional Advice:</Text>
-            <Text style={[styles.expandedText, { color: textColor }]}>{expandedData.advice}</Text>
-          </View>
-        );
-      default:
-        return (
-          <View style={[styles.expandedContent, { borderTopColor: dividerColor }]}>
-            <Text style={[styles.expandedTitle, { color: textColor }]}>More Details:</Text>
-            <Text style={[styles.expandedText, { color: textColor }]}>No expanded content for this type yet.</Text>
-          </View>
-        );
-    }
-  };
+const InfoCard = ({ title, value, icon }: InfoCardProps) => {
+  const parsedValue = splitValue(value);
 
   return (
-    <TouchableOpacity 
-      onPress={toggleExpand} 
-      activeOpacity={0.9}
-      onLayout={(event) => {
-        if (initialHeight === 0) {
-          setInitialHeight(event.nativeEvent.layout.height);
-          animatedHeight.setValue(event.nativeEvent.layout.height); // Set initial animated value
-        }
-      }}
-      style={[
-        styles.baseContainer,
-        { backgroundColor: cardBg, borderColor, borderWidth: softLightMode ? 1 : 0 },
-      ]}
-    >
-      <Animated.View style={[styles.animatedContainer, { height: animatedHeight }]}>
-        <View style={styles.header}>
-          <CardIcon icon={icon} color={iconColor} background={iconBg} />
-          <Text style={[styles.title, { color: textColor }]}>{title}</Text>
-        </View>
-        <Text style={[styles.value, { color: textColor }]}>{value}</Text>
-        <View onLayout={(event) => {
-          if (expandedContentHeight === 0) {
-            setExpandedContentHeight(event.nativeEvent.layout.height);
-          }
-        }}>
-          {renderExpandedContent()}
-        </View>
-      </Animated.View>
-    </TouchableOpacity>
+    <View style={styles.cardContainer}>
+      <View style={styles.header}>
+        <CardIcon icon={icon} />
+        <Text style={styles.title}>{title}</Text>
+      </View>
+      <Text style={styles.value}>
+        <Text style={styles.valueNumber}>{parsedValue.number}</Text>
+        {parsedValue.unit && <Text style={styles.valueUnit}>{parsedValue.unit}</Text>}
+      </Text>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  baseContainer: {
+  cardContainer: {
+    backgroundColor: MoonSenseColors.Surface,
     borderRadius: 18,
-    margin: 8,
-    flex: 1,
-    minWidth: 120,
-    overflow: 'hidden', // Clip content outside rounded borders
-    borderWidth: 0,
-    borderColor: 'transparent',
-  },
-  animatedContainer: {
     padding: 16,
-    // minHeight is not good with Animated.Value
+    flex: 1,
+    margin: 8,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  iconPlaceholder: {
+  iconContainer: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 14,
-    color: MoonSenseColors.NightGrey,
-    marginLeft: 8,
+    color: MoonSenseColors.OnSurfaceMedium,
+    marginLeft: 10,
     fontWeight: '500',
   },
   value: {
     fontSize: 36,
-    fontWeight: 'bold',
-    color: MoonSenseColors.NightGrey,
+    color: MoonSenseColors.OnSurface,
     marginTop: 4,
-    textAlign: 'center',
   },
-  expandedContent: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
+  valueNumber: {
+    fontWeight: '600',
   },
-  expandedTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: MoonSenseColors.NightGrey,
-    marginBottom: 5,
-  },
-  expandedText: {
-    fontSize: 12,
-    color: MoonSenseColors.NightGrey,
-    marginBottom: 3,
+  valueUnit: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: MoonSenseColors.OnSurfaceDisabled,
+    marginLeft: 2,
   },
 });
 

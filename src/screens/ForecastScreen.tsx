@@ -154,7 +154,10 @@ const ForecastScreen = () => {
     >
       <AnimatedCard index={0}>
         <View style={styles.heroCard}>
-          <Text style={styles.heroTitle}>Weekly outlook</Text>
+          <View style={styles.heroTitleRow}>
+            <Text style={styles.heroTitle}>Weekly outlook</Text>
+            <Ionicons name="calendar-outline" size={22} color={styles.heroTitle.color} />
+          </View>
           <Text style={styles.heroSubtitle}>Tap a day to reveal rituals and conditions.</Text>
           {!hasDailyData ? <Text style={styles.fallbackNote}>Daily forecast not available; using an hourly snapshot.</Text> : null}
           <FlatList
@@ -265,6 +268,11 @@ const createStyles = (softLightMode: boolean) => {
       fontSize: 24,
       fontWeight: 'bold',
       color: textPrimary,
+    },
+    heroTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
     },
     heroSubtitle: {
       color: textMuted,

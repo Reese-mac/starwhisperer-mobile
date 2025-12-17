@@ -98,14 +98,14 @@ const MOON_DETAILS = {
 };
 
 const MOON_PHASES_DATA = [
-  { name: 'New Moon',        icon: 'moon-new',               illumination: '0%',   energySuggestion: 'Set fresh intentions.', description: 'A new cycle begins.',    riseTime: '06:00 AM', setTime: '06:00 PM' },
-  { name: 'Waxing Crescent', icon: 'moon-waxing-crescent',   illumination: '25%',  energySuggestion: 'Take small actions.',   description: 'Momentum slowly grows.', riseTime: '09:00 AM', setTime: '09:00 PM' },
-  { name: 'First Quarter',   icon: 'moon-first-quarter',     illumination: '50%',  energySuggestion: 'Make clear decisions.', description: 'Energy pushes forward.', riseTime: '12:00 PM', setTime: '12:00 AM' },
-  { name: 'Waxing Gibbous',  icon: 'moon-waxing-gibbous',    illumination: '75%',  energySuggestion: 'Refine and polish.',    description: 'Approach fullness.',     riseTime: '03:00 PM', setTime: '03:00 AM' },
-  { name: 'Full Moon',       icon: 'moon-full',              illumination: '100%', energySuggestion: 'Celebrate and release.', description: 'Peak brightness.',       riseTime: '06:00 PM', setTime: '06:00 AM' },
-  { name: 'Waning Gibbous',  icon: 'moon-waning-gibbous',    illumination: '75%',  energySuggestion: 'Share and reflect.',    description: 'Begin to soften.',       riseTime: '09:00 PM', setTime: '09:00 AM' },
-  { name: 'Last Quarter',    icon: 'moon-last-quarter',      illumination: '50%',  energySuggestion: 'Let go of what is spent.', description: 'Clear and simplify.', riseTime: '12:00 AM', setTime: '12:00 PM' },
-  { name: 'Waning Crescent', icon: 'moon-waning-crescent',   illumination: '25%',  energySuggestion: 'Rest and recover.',     description: 'Prepare for renewal.',   riseTime: '03:00 AM', setTime: '03:00 PM' },
+  { name: 'New Moon',        icon: 'moon-new',               illumination: '0%',   phaseValue: 0.0,  energySuggestion: 'Set fresh intentions.', description: 'A new cycle begins.',    riseTime: '06:00 AM', setTime: '06:00 PM' },
+  { name: 'Waxing Crescent', icon: 'moon-waxing-crescent',   illumination: '25%',  phaseValue: 0.14, energySuggestion: 'Take small actions.',   description: 'Momentum slowly grows.', riseTime: '09:00 AM', setTime: '09:00 PM' },
+  { name: 'First Quarter',   icon: 'moon-first-quarter',     illumination: '50%',  phaseValue: 0.26, energySuggestion: 'Make clear decisions.', description: 'Energy pushes forward.', riseTime: '12:00 PM', setTime: '12:00 AM' },
+  { name: 'Waxing Gibbous',  icon: 'moon-waxing-gibbous',    illumination: '75%',  phaseValue: 0.44, energySuggestion: 'Refine and polish.',    description: 'Approach fullness.',     riseTime: '03:00 PM', setTime: '03:00 AM' },
+  { name: 'Full Moon',       icon: 'moon-full',              illumination: '100%', phaseValue: 0.5,  energySuggestion: 'Celebrate and release.', description: 'Peak brightness.',       riseTime: '06:00 PM', setTime: '06:00 AM' },
+  { name: 'Waning Gibbous',  icon: 'moon-waning-gibbous',    illumination: '75%',  phaseValue: 0.64, energySuggestion: 'Share and reflect.',    description: 'Begin to soften.',       riseTime: '09:00 PM', setTime: '09:00 AM' },
+  { name: 'Last Quarter',    icon: 'moon-last-quarter',      illumination: '50%',  phaseValue: 0.76, energySuggestion: 'Let go of what is spent.', description: 'Clear and simplify.', riseTime: '12:00 AM', setTime: '12:00 PM' },
+  { name: 'Waning Crescent', icon: 'moon-waning-crescent',   illumination: '25%',  phaseValue: 0.9,  energySuggestion: 'Rest and recover.',     description: 'Prepare for renewal.',   riseTime: '03:00 AM', setTime: '03:00 PM' },
 ];
 
 // --- Mock API Functions ---

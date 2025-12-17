@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import AnimatedCard from '../components/AnimatedCard';
 import { MoonSenseColors } from '../constants/colors';
 import { useSettings } from '../context/SettingsContext';
@@ -29,11 +30,48 @@ const PhaseItem = ({
     onPress={onSelect}
     activeOpacity={0.85}
   >
-    <View style={[styles.phaseIcon, active && styles.phaseIconActive]} />
+    <Text style={[styles.phaseEmoji, active && styles.phaseEmojiActive]}>
+      {getPhaseEmoji(phase?.phaseValue, phase?.name)}
+    </Text>
     <Text style={[styles.phaseName, active && styles.phaseNameActive]}>{phase.name}</Text>
     <Text style={[styles.phaseSub, active && styles.phaseNameActive]}>{phase.illumination}</Text>
   </TouchableOpacity>
 );
+
+const getPhaseEmoji = (phaseValue?: number, name?: string) => {
+  if (typeof phaseValue === 'number' && !Number.isNaN(phaseValue)) {
+    const normalized = ((phaseValue % 1) + 1) % 1;
+    if (normalized <= 0.03 || normalized >= 0.97) return '🌑';
+    if (normalized <= 0.22) return '🌒';
+    if (normalized <= 0.28) return '🌓';
+    if (normalized <= 0.47) return '🌔';
+    if (normalized <= 0.53) return '🌕';
+    if (normalized <= 0.72) return '🌖';
+    if (normalized <= 0.78) return '🌗';
+    return '🌘';
+  }
+
+  switch (name) {
+    case 'New Moon':
+      return '🌑';
+    case 'Waxing Crescent':
+      return '🌒';
+    case 'First Quarter':
+      return '🌓';
+    case 'Waxing Gibbous':
+      return '🌔';
+    case 'Full Moon':
+      return '🌕';
+    case 'Waning Gibbous':
+      return '🌖';
+    case 'Last Quarter':
+      return '🌗';
+    case 'Waning Crescent':
+      return '🌘';
+    default:
+      return '🌙';
+  }
+};
 
 const MoonScreen = () => {
   const { city, softLightMode } = useSettings();
@@ -99,7 +137,12 @@ const MoonScreen = () => {
         <AnimatedCard index={0}>
           <View style={styles.hero}>
             <Text style={styles.heroLabel}>Current phase</Text>
-            <Text style={styles.heroTitle}>{selectedPhase.name}</Text>
+            <View style={styles.heroTitleRow}>
+              <Text style={styles.heroTitle}>{selectedPhase.name}</Text>
+              {selectedPhase.name === 'Waning Crescent' ? (
+                <Ionicons name="telescope-outline" size={26} color="#FFFFFF" style={styles.heroTitleIcon} />
+              ) : null}
+            </View>
             <Text style={styles.heroDescription}>{selectedPhase.description}</Text>
 
             <View style={styles.heroMetaRow}>
@@ -200,7 +243,9 @@ const createStyles = (softLightMode: boolean) => {
     },
 
     heroLabel: { color: '#B8B7D6', fontSize: 12, letterSpacing: 2, zIndex: 1 },
-    heroTitle: { color: '#fff', fontSize: 32, fontWeight: '700', marginTop: 12, zIndex: 1 },
+    heroTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12, zIndex: 1 },
+    heroTitle: { color: '#fff', fontSize: 32, fontWeight: '700', zIndex: 1 },
+    heroTitleIcon: { marginTop: 2 },
     heroDescription: { color: '#F4F0FF', marginTop: 6, zIndex: 1 },
 
     heroMetaRow: { flexDirection: 'row', gap: 14, marginTop: 24, zIndex: 1 },
@@ -238,14 +283,14 @@ const createStyles = (softLightMode: boolean) => {
       backgroundColor: MoonSenseColors.CosmicPurple,
       borderColor: MoonSenseColors.CosmicPurple,
     },
-    phaseIcon: {
+    phaseEmoji: {
       width: 28,
-      height: 28,
-      borderRadius: 14,
-      borderWidth: 2,
-      borderColor: softLightMode ? textPrimary : MoonSenseColors.NightGrey,
+      textAlign: 'center',
+      fontSize: 20,
     },
-    phaseIconActive: { borderColor: '#fff' },
+    phaseEmojiActive: {
+      opacity: 0.95,
+    },
     phaseName: { fontWeight: '600', flex: 1, color: textPrimary },
     phaseSub: { fontSize: 12, color: textSecondary },
     phaseNameActive: { color: '#fff' },

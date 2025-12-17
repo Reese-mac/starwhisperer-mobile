@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TextInput, Switch, FlatList, TouchableOpacity } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { MoonSenseColors } from '../constants/colors';
 import { CITY_OPTIONS } from '../constants/cities';
 import { useSettings } from '../context/SettingsContext';
@@ -44,7 +45,12 @@ const SettingsScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView ref={scrollRef}>
-        <Text style={styles.title}>Settings</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Settings</Text>
+          <View pointerEvents="none" style={styles.globeIcon}>
+            <Ionicons name="globe-outline" size={22} color={styles.globeIconTint.color} />
+          </View>
+        </View>
 
         {/* City Selection */}
         <View style={styles.section}>
@@ -135,6 +141,25 @@ const createStyles = (softLightMode: boolean) => {
       color: textColor,
       paddingHorizontal: 24,
       marginBottom: 20,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingRight: 20,
+    },
+    globeIconTint: {
+      color: textColor,
+    },
+    globeIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: softLightMode ? 'rgba(255,255,255,0.08)' : 'rgba(108,74,255,0.08)',
+      borderWidth: 1,
+      borderColor,
     },
     section: {
       marginBottom: 30,

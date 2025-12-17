@@ -173,7 +173,12 @@ const ExploreScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Explore</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Explore</Text>
+        <View pointerEvents="none" style={styles.cityIcon}>
+          <Ionicons name="business-outline" size={22} color={styles.searchIconColor.color} />
+        </View>
+      </View>
 
       {statusMessage ? (
         <View style={styles.statusBanner}>
@@ -269,6 +274,22 @@ const createStyles = (softLightMode: boolean) => {
       paddingHorizontal: 24,
       paddingTop: 40,
       paddingBottom: 10,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingRight: 20,
+    },
+    cityIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: softLightMode ? 'rgba(255,255,255,0.08)' : 'rgba(108,74,255,0.08)',
+      borderWidth: 1,
+      borderColor,
     },
     searchContainer: {
       flexDirection: 'row',

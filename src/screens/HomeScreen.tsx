@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,237 +15,107 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import AnimatedCard from '../components/AnimatedCard';
-
 import ForecastItem from '../components/ForecastItem';
-
 import HeaderBlock from '../components/HeaderBlock';
-
 import InfoCard from '../components/InfoCard';
-
 import MoonEnergyPopup from '../components/MoonEnergyPopup';
-
 import { ScreenDecorations } from '../components/decorations/ScreenDecorations';
 
-
-
 import { MoonSenseColors } from '../constants/colors';
-
 import { SAMPLE_DATA_NOTICE, useWeatherData } from '../hooks/useWeatherData';
-
 import { useSettings } from '../context/SettingsContext';
 
-
-
 const HOURLY_CARD_WIDTH = 70;
-
 const HOURLY_CARD_MARGIN = 6;
-
 const HOURLY_SNAP_INTERVAL = HOURLY_CARD_WIDTH + HOURLY_CARD_MARGIN * 2;
-
 const LIST_SIDE_PADDING = 16;
 
-
-
 export default function HomeScreen() {
-
   const router = useRouter();
-
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
-
-
   const { softLightMode } = useSettings();
-
   const { data, refreshing, refetch, error, lastUpdated } = useWeatherData();
-
   const isInfoBanner = error === SAMPLE_DATA_NOTICE;
 
-
-
   const scrollRef = useRef<ScrollView>(null);
-
   const hourlyListRef = useRef<FlatList<any>>(null);
 
-
-
   useScrollToTop(scrollRef);
-
   const insets = useSafeAreaInsets();
 
-
-
-  /** ⭐ 核心：每次回到 Home，自動把 Today 小時列表拉回最左 */
-
   useFocusEffect(
-
     React.useCallback(() => {
-
       scrollRef.current?.scrollTo({ y: 0, animated: true });
-
-
-
       requestAnimationFrame(() => {
-
-        hourlyListRef.current?.scrollToOffset({
-
-          offset: 0,
-
-          animated: false,
-
-        });
-
+        hourlyListRef.current?.scrollToOffset({ offset: 0, animated: false });
       });
-
-
-
       return undefined;
-
     }, []),
-
   );
-
-
 
   const handleRefresh = () => {
-
     refetch();
-
-
-
     requestAnimationFrame(() => {
-
-      hourlyListRef.current?.scrollToOffset({
-
-        offset: 0,
-
-        animated: false,
-
-      });
-
+      hourlyListRef.current?.scrollToOffset({ offset: 0, animated: false });
     });
-
   };
 
+  const { rangeText, weatherDetailsWithExpanded } = useMemo(() => {
+    if (!data) return { rangeText: '', weatherDetailsWithExpanded: [] };
 
+    const feelsLike = data.details.find(d => d.type === 'feelsLike');
+    const range = data.daily?.[0]
+      ? `${data.daily[0].high}° / ${data.daily[0].low}°`
+      : '';
+    const constructedRangeText = `${range}  Feels like ${feelsLike?.value ?? ''}°`;
 
-  const hourlySnapOffsets = useMemo(
-
-    () => (data?.hourly ?? []).map((_, index) => LIST_SIDE_PADDING + HOURLY_SNAP_INTERVAL * index),
-
-    [data?.hourly],
-
-  );
-
-
-
-  const weatherDetailsWithExpanded = useMemo(() => {
-
-    if (!data) return [];
-
-    return data.details.map(item => {
-
+    const details = data.details.map(item => {
       let expandedData;
-
       switch (item.type) {
-
-        case 'airTemp':
-
-          expandedData = data.tempTrend;
-
-          break;
-
-        case 'waterTemp':
-
-          expandedData = data.waterTemp;
-
-          break;
-
-        case 'feelsLike':
-
-          expandedData = data.advice;
-
-          break;
-
-        default:
-
-          expandedData = undefined;
-
+        case 'airTemp': expandedData = data.tempTrend; break;
+        case 'waterTemp': expandedData = data.waterTemp; break;
+        case 'feelsLike': expandedData = data.advice; break;
+        default: expandedData = undefined;
       }
-
       return { ...item, expandedData };
-
     });
 
+    return { rangeText: constructedRangeText, weatherDetailsWithExpanded: details };
   }, [data]);
 
-
-
   if (!data) {
-
     return (
-
       <View style={styles.loadingState}>
-
-        <ActivityIndicator color={MoonSenseColors.CosmicPurple} size="large" />
-
+        <ActivityIndicator color={MoonSenseColors.Primary} size="large" />
         <Text style={styles.loadingText}>Preparing lunar briefing...</Text>
-
       </View>
-
     );
-
   }
 
-
-
   return (
-
-    <View style={{ flex: 1, backgroundColor: softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow }}>
-
+    <SafeAreaView style={{ flex: 1, backgroundColor: MoonSenseColors.Background }}>
       <ScreenDecorations softLightMode={softLightMode} />
-
       <ScrollView
-
         ref={scrollRef}
-
         style={styles.container}
-
-        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top }]} 
-
+        contentContainerStyle={{ paddingTop: insets.top }}
         refreshControl={
-
           <RefreshControl
-
             refreshing={refreshing}
-
             onRefresh={handleRefresh}
-
-            tintColor={MoonSenseColors.CosmicPurple}
-
+            tintColor={MoonSenseColors.Primary}
           />
-
         }
-
       >
-
-
-        {/* Header */}
-        <AnimatedCard index={0}>
-          <HeaderBlock
-            temperature={data.header.temperature}
-            city={data.header.city}
-            description={data.header.description}
-            cosmicWhisper={data.header.cosmicWhisper}
-            lastUpdated={lastUpdated ?? undefined}
-            statusMessage={error ?? undefined}
-            statusVariant={isInfoBanner ? 'info' : 'error'}
-            onMoonPress={() => router.push('/modal')}
-            onLongMoonPress={() => setIsPopupVisible(true)}
-            onCityPress={() => router.push('/(tabs)/settings')}
-            onSettingsPress={() => router.push('/(tabs)/settings')}
-            softLightMode={softLightMode}
-          />
-        </AnimatedCard>
+        <HeaderBlock
+          city={data.header.city}
+          temperature={data.header.temperature}
+          description={data.header.description}
+          rangeText={rangeText}
+          onCityPress={() => router.push('/(tabs)/settings')}
+          onSettingsPress={() => router.push('/(tabs)/settings')}
+        />
 
         {/* Today - Hourly */}
         <AnimatedCard index={1}>
@@ -257,7 +128,7 @@ export default function HomeScreen() {
               horizontal
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item: any) => item.time}
-              snapToOffsets={hourlySnapOffsets}
+              snapToOffsets={useMemo(() => (data.hourly ?? []).map((_, index) => LIST_SIDE_PADDING + HOURLY_SNAP_INTERVAL * index), [data.hourly])}
               snapToAlignment="start"
               decelerationRate="fast"
               disableIntervalMomentum
@@ -266,24 +137,17 @@ export default function HomeScreen() {
                 offset: LIST_SIDE_PADDING + HOURLY_SNAP_INTERVAL * index,
                 index,
               })}
-              renderItem={({ item, index }) => {
-                const badge = index === 0 ? 'Now' : index === 1 ? '+1h' : undefined;
-                const hint = item.uv ? 'UV' : item.icon?.includes('rain') ? 'Rain' : undefined;
-
-                return (
-                  <ForecastItem
-                    time={item.time}
-                    icon={item.icon}
-                    temperature={item.temp}
-                    badge={badge}
-                    hint={hint}
-                    softLightMode={softLightMode}
-                  />
-                );
-              }}
-              contentContainerStyle={{
-                paddingHorizontal: LIST_SIDE_PADDING,
-              }}
+              renderItem={({ item, index }) => (
+                <ForecastItem
+                  time={item.time}
+                  icon={item.icon}
+                  temperature={item.temp}
+                  badge={index === 0 ? 'Now' : undefined}
+                  hint={item.uv ? 'UV' : item.icon?.includes('rain') ? 'Rain' : undefined}
+                  softLightMode={softLightMode}
+                />
+              )}
+              contentContainerStyle={{ paddingHorizontal: LIST_SIDE_PADDING }}
             />
           </View>
         </AnimatedCard>
@@ -301,25 +165,16 @@ export default function HomeScreen() {
 
         {/* Moon Energy */}
         <AnimatedCard index={weatherDetailsWithExpanded.length + 3}>
-          <View
-            style={[
-              styles.moonSummaryCard,
-              softLightMode && {
-                backgroundColor: 'rgba(255,255,255,0.12)',
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.25)',
-              },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, softLightMode && { color: '#fff' }]}>Moon Energy</Text>
-            <Text style={[styles.summaryText, softLightMode && { color: 'rgba(255,255,255,0.85)' }]}>
+          <View style={[styles.moonSummaryCard, { backgroundColor: MoonSenseColors.Surface }]}>
+            <Text style={[styles.sectionTitle, { color: MoonSenseColors.OnSurface }]}>Moon Energy</Text>
+            <Text style={[styles.summaryText, { color: MoonSenseColors.OnSurfaceMedium }]}>
               {data.advice?.advice || 'Tune into lunar calm.'}
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/moon')}
-              style={[styles.summaryCta, softLightMode && { backgroundColor: '#7C68FF' }]}
+              style={[styles.summaryCta, { backgroundColor: MoonSenseColors.Primary }]}
             >
-              <Text style={styles.summaryCtaText}>See more</Text>
+              <Text style={[styles.summaryCtaText, { color: MoonSenseColors.OnPrimary }]}>See more</Text>
             </TouchableOpacity>
           </View>
         </AnimatedCard>
@@ -330,7 +185,7 @@ export default function HomeScreen() {
         onClose={() => setIsPopupVisible(false)}
         message={data.advice?.advice ?? 'Embrace the cosmic vibes.'}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -339,18 +194,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
-  contentContainer: {
-    // Removed paddingVertical to allow dynamic paddingTop from safe area insets
-  },
   loadingState: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: MoonSenseColors.LunarGlow,
+    backgroundColor: MoonSenseColors.Background,
   },
   loadingText: {
     marginTop: 12,
-    color: MoonSenseColors.NightGrey,
+    color: MoonSenseColors.OnSurfaceMedium,
   },
   sectionContainer: {
     marginTop: 24,
@@ -358,7 +210,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: MoonSenseColors.NightGrey,
+    color: MoonSenseColors.OnSurface,
     marginBottom: 12,
     marginLeft: 24,
   },
@@ -372,23 +224,18 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     padding: 18,
     borderRadius: 18,
-    backgroundColor: MoonSenseColors.MoonLavender,
-    borderWidth: 0,
   },
   summaryText: {
     fontSize: 14,
-    color: MoonSenseColors.NightGrey,
     marginVertical: 8,
   },
   summaryCta: {
     alignSelf: 'flex-start',
-    backgroundColor: MoonSenseColors.CosmicPurple,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 14,
   },
   summaryCtaText: {
-    color: '#fff',
     fontWeight: '600',
   },
 });

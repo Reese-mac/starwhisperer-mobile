@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { MoonSenseColors } from '../constants/colors';
 
 const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
-  sun: 'sunny',
+  sun: 'sunny-outline',
   'sun-cloud': 'partly-sunny-outline',
   cloud: 'cloud-outline',
   rain: 'rainy-outline',
@@ -12,9 +12,9 @@ const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   moon: 'moon-outline',
 };
 
-const ForecastIcon = ({ icon, color }: { icon: string; color: string }) => {
+const ForecastIcon = ({ icon }: { icon: string; }) => {
   const resolvedIcon = iconMap[icon] || 'cloud-outline';
-  return <Ionicons name={resolvedIcon} size={22} color={color} />;
+  return <Ionicons name={resolvedIcon} size={24} color={MoonSenseColors.OnSurface} />;
 };
 
 export type ForecastItemProps = {
@@ -23,66 +23,62 @@ export type ForecastItemProps = {
   temperature: string;
   badge?: string;
   hint?: string;
-  softLightMode?: boolean;
 };
 
-const ForecastItem = ({ time, icon, temperature, badge, hint, softLightMode = false }: ForecastItemProps) => {
-  const cardBg = softLightMode ? 'rgba(255,255,255,0.08)' : MoonSenseColors.MistBlue;
-  const textColor = softLightMode ? '#fff' : MoonSenseColors.NightGrey;
-  const badgeBg = softLightMode ? 'rgba(255,255,255,0.15)' : '#ffffff';
-  const hintColor = softLightMode ? 'rgba(255,255,255,0.7)' : MoonSenseColors.NightGrey;
-  const borderColor = softLightMode ? 'rgba(255,255,255,0.2)' : 'transparent';
-  const iconColor = softLightMode ? '#FFFFFF' : MoonSenseColors.NightGrey;
+const ForecastItem = ({ time, icon, temperature, badge, hint }: ForecastItemProps) => {
   return (
-    <View style={[styles.container, { backgroundColor: cardBg, borderColor, borderWidth: softLightMode ? 1 : 0 }]}>
-      <Text style={[styles.time, { color: textColor }]}>{time}</Text>
-      {badge ? (
-        <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-          <Text style={[styles.badgeText, { color: textColor }]}>{badge}</Text>
+    <View style={styles.container}>
+      <Text style={styles.time}>{time}</Text>
+      {badge && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{badge}</Text>
         </View>
-      ) : null}
-      <ForecastIcon icon={icon} color={iconColor} />
-      <Text style={[styles.temperature, { color: textColor }]}>{temperature}°</Text>
-      {hint ? <Text style={[styles.hint, { color: hintColor }]}>{hint}</Text> : null}
+      )}
+      <ForecastIcon icon={icon} />
+      <Text style={styles.temperature}>{temperature}°</Text>
+      {hint && <Text style={styles.hint}>{hint}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: 70,
-    height: 134,
-    borderRadius: 32,
+    backgroundColor: MoonSenseColors.Surface,
+    borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingVertical: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 10,
     marginHorizontal: 6,
+    width: 70,
+    height: 140,
   },
   time: {
     fontSize: 12,
-    color: MoonSenseColors.NightGrey,
+    color: MoonSenseColors.OnSurfaceMedium,
     fontWeight: '500',
   },
   badge: {
     paddingHorizontal: 10,
     paddingVertical: 2,
     borderRadius: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: `rgba(187, 134, 252, 0.2)`, // Primary color with transparency
+    position: 'absolute',
+    top: 35,
   },
   badgeText: {
     fontSize: 10,
-    color: MoonSenseColors.NightGrey,
-    fontWeight: '600',
+    color: MoonSenseColors.Primary,
+    fontWeight: '700',
   },
   temperature: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: MoonSenseColors.NightGrey,
+    color: MoonSenseColors.OnSurface,
   },
   hint: {
     fontSize: 11,
-    color: MoonSenseColors.NightGrey,
-    opacity: 0.7,
+    color: MoonSenseColors.OnSurfaceDisabled,
   },
 });
 
