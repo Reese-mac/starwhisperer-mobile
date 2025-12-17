@@ -125,16 +125,13 @@ export default function HomeScreen() {
             city={data.header.city}
             description={data.header.description}
             cosmicWhisper={data.header.cosmicWhisper}
+            lastUpdated={lastUpdated}
             onMoonPress={() => router.push('/modal')}
             onLongMoonPress={() => setIsPopupVisible(true)}
             onCityPress={() => router.push('/(tabs)/settings')}
             onSettingsPress={() => router.push('/(tabs)/settings')}
             softLightMode={softLightMode}
           />
-
-          {lastUpdated && (
-            <Text style={styles.updatedAt}>Updated at {lastUpdated}</Text>
-          )}
 
           {error && (
             <View

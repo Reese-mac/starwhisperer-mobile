@@ -9,6 +9,7 @@ interface HeaderBlockProps {
   city: string;
   description: string;
   cosmicWhisper: string;
+  lastUpdated?: string;
   onMoonPress: () => void;
   onLongMoonPress: () => void;
   onCityPress: () => void;
@@ -16,76 +17,94 @@ interface HeaderBlockProps {
   softLightMode?: boolean;
 }
 
+const HEADER_HEIGHT = 320;
+const DAY_GRADIENT = ['#F4F1FF', '#E8E2FF'] as const;
+const NIGHT_GRADIENT = ['#2C2A6F', '#4B3FA6'] as const;
+
 const HeaderBlock = ({
   temperature,
   city,
   description,
   cosmicWhisper,
+  lastUpdated,
   onMoonPress,
   onLongMoonPress,
   onCityPress,
   onSettingsPress,
   softLightMode = false,
 }: HeaderBlockProps) => {
-  const gradientColors = softLightMode
-    ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']
-    : [MoonSenseColors.CosmicPurple, MoonSenseColors.MoonLavender];
-  const textColor = softLightMode ? '#fff' : '#fff';
-  const badgeBg = softLightMode ? 'rgba(255,255,255,0.14)' : MoonSenseColors.MoonWhite;
-  const badgeText = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
-  const containerBg = softLightMode ? 'rgba(255,255,255,0.06)' : undefined;
-  const containerBorder = softLightMode ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' } : null;
+  const isNight = softLightMode;
+  const gradientColors = isNight ? NIGHT_GRADIENT : DAY_GRADIENT;
+  const primaryTextColor = isNight ? '#fff' : MoonSenseColors.CosmicPurple;
+  const secondaryTextColor = isNight ? 'rgba(255,255,255,0.78)' : MoonSenseColors.NightGrey;
+  const badgeBg = isNight ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.92)';
+  const badgeText = isNight ? MoonSenseColors.MoonWhite : MoonSenseColors.CosmicPurple;
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.container, containerBg ? { backgroundColor: containerBg } : null, containerBorder]}
-    >
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={onCityPress} activeOpacity={0.8}>
-          <Text style={[styles.locationLabel, { color: textColor, opacity: 0.7 }]}>Observing</Text>
-          <View style={styles.cityRow}>
-            <Ionicons name="location-outline" size={18} color={textColor} />
-            <Text style={[styles.city, { color: textColor }]}>{city}</Text>
-          </View>
+    <View style={styles.headerWrapper}>
+      <LinearGradient colors={gradientColors} style={styles.headerBackground} />
+
+      <View style={styles.headerContent}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={onCityPress} activeOpacity={0.8}>
+            <Text style={[styles.locationLabel, { color: secondaryTextColor }]}>Observing</Text>
+            <View style={styles.cityRow}>
+              <Ionicons name="location-outline" size={18} color={primaryTextColor} />
+              <Text style={[styles.city, { color: primaryTextColor }]}>{city}</Text>
+            </View>
+            {lastUpdated && (
+              <Text style={[styles.updatedAt, { color: secondaryTextColor }]}>
+                Updated at {lastUpdated}
+              </Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onSettingsPress} accessibilityRole="button">
+            <Ionicons name="settings-outline" size={22} color={primaryTextColor} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.tempRow}>
+          <Text style={[styles.temperature, { color: primaryTextColor }]}>{temperature}°</Text>
+          <Text style={[styles.description, { color: secondaryTextColor }]}>{description}</Text>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.moonBadge, { backgroundColor: badgeBg }]}
+          onPress={onMoonPress}
+          onLongPress={onLongMoonPress}
+          delayLongPress={240}
+          accessibilityRole="button"
+        >
+          <Ionicons name="moon" size={18} color={isNight ? '#fff' : MoonSenseColors.CosmicPurple} />
+          <Text style={[styles.moonBadgeText, { color: badgeText }]}>&nbsp;Hold for lunar whisper</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onSettingsPress} accessibilityRole="button">
-          <Ionicons name="settings-outline" size={22} color={textColor} />
-        </TouchableOpacity>
+
+        <View style={styles.whisperBox}>
+          <Ionicons name="sparkles-outline" size={16} color={secondaryTextColor} />
+          <Text style={[styles.cosmicWhisper, { color: secondaryTextColor }]}>{cosmicWhisper}</Text>
+        </View>
       </View>
-
-      <View style={styles.tempRow}>
-        <Text style={[styles.temperature, { color: textColor }]}>{temperature}°</Text>
-        <Text style={[styles.description, { color: textColor }]}>{description}</Text>
-      </View>
-
-      <TouchableOpacity
-        style={[styles.moonBadge, { backgroundColor: badgeBg }]}
-        onPress={onMoonPress}
-        onLongPress={onLongMoonPress}
-        delayLongPress={240}
-        accessibilityRole="button"
-      >
-        <Ionicons name="moon" size={18} color={softLightMode ? '#fff' : MoonSenseColors.CosmicPurple} />
-        <Text style={[styles.moonBadgeText, { color: badgeText }]}>&nbsp;Hold for lunar whisper</Text>
-      </TouchableOpacity>
-
-      <View style={styles.whisperBox}>
-        <Ionicons name="sparkles-outline" size={16} color={textColor} />
-        <Text style={[styles.cosmicWhisper, { color: textColor }]}>{cosmicWhisper}</Text>
-      </View>
-
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    borderRadius: 30,
-    padding: 24,
-    marginHorizontal: 16,
+  headerWrapper: {
+    position: 'relative',
+    width: '100%',
+    minHeight: HEADER_HEIGHT,
+  },
+  headerBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: HEADER_HEIGHT,
+  },
+  headerContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 56,
   },
   headerRow: {
     flexDirection: 'row',
@@ -150,6 +169,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     flex: 1,
+  },
+  updatedAt: {
+    fontSize: 12,
+    marginTop: 4,
+    opacity: 0.8,
   },
 });
 
