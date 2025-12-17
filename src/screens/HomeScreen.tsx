@@ -20,6 +20,7 @@ import InfoCard from '../components/InfoCard';
 import MoonEnergyPopup from '../components/MoonEnergyPopup';
 
 import { MoonSenseColors } from '../constants/colors';
+import { CITY_MAP } from '../constants/cities';
 import { SAMPLE_DATA_NOTICE, useWeatherData } from '../hooks/useWeatherData';
 import { useSettings } from '../context/SettingsContext';
 
@@ -32,7 +33,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
-  const { softLightMode } = useSettings();
+  const { softLightMode, currentCity } = useSettings();
   const { data, refreshing, refetch, error, lastUpdated } = useWeatherData();
   const isInfoBanner = error === SAMPLE_DATA_NOTICE;
 
@@ -118,88 +119,89 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* Header */}
+        {/* Header & Today Hourly */}
         <AnimatedCard index={0}>
-          <HeaderBlock
-            temperature={data.header.temperature}
-            city={data.header.city}
-            description={data.header.description}
-            cosmicWhisper={data.header.cosmicWhisper}
-            onMoonPress={() => router.push('/modal')}
-            onLongMoonPress={() => setIsPopupVisible(true)}
-            onCityPress={() => router.push('/(tabs)/settings')}
-            onSettingsPress={() => router.push('/(tabs)/settings')}
-            softLightMode={softLightMode}
-          />
+          <View style={[styles.heroFrame, softLightMode && styles.heroFrameNight]}>
+            <HeaderBlock
+              temperature={data.header.temperature}
+              city={CITY_MAP[currentCity]?.label ?? data.header.city}
+              description={data.header.description}
+              cosmicWhisper={data.header.cosmicWhisper}
+              onMoonPress={() => router.push('/modal')}
+              onLongMoonPress={() => setIsPopupVisible(true)}
+              onCityPress={() => router.push('/(tabs)/settings')}
+              onSettingsPress={() => router.push('/(tabs)/settings')}
+              softLightMode={softLightMode}
+            />
 
-          {lastUpdated && (
-            <Text style={styles.updatedAt}>Updated at {lastUpdated}</Text>
-          )}
+            {lastUpdated && (
+              <Text style={[styles.updatedAt, softLightMode && { color: 'rgba(255,255,255,0.75)' }]}>
+                Updated at {lastUpdated}
+              </Text>
+            )}
 
-          {error && (
-            <View
-              style={[
-                styles.statusBanner,
-                isInfoBanner ? styles.statusBannerInfo : styles.statusBannerError,
-              ]}
-            >
+            {error && (
               <View
                 style={[
-                  styles.statusDot,
-                  isInfoBanner ? styles.statusDotInfo : styles.statusDotError,
-                ]}
-              />
-              <Text
-                style={[
-                  styles.statusText,
-                  isInfoBanner ? styles.statusTextInfo : styles.statusTextError,
+                  styles.statusBanner,
+                  isInfoBanner ? styles.statusBannerInfo : styles.statusBannerError,
                 ]}
               >
-                {error}
-              </Text>
+                <View
+                  style={[
+                    styles.statusDot,
+                    isInfoBanner ? styles.statusDotInfo : styles.statusDotError,
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.statusText,
+                    isInfoBanner ? styles.statusTextInfo : styles.statusTextError,
+                  ]}
+                >
+                  {error}
+                </Text>
+              </View>
+            )}
+
+            <View style={{ marginTop: 24 }}>
+              <Text style={[styles.sectionTitle, { marginBottom: 12, marginLeft: 24 }]}>Today</Text>
+
+              <FlatList
+                ref={hourlyListRef}
+                data={data.hourly}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item: any) => item.time}
+                snapToOffsets={hourlySnapOffsets}
+                snapToAlignment="start"
+                decelerationRate="fast"
+                disableIntervalMomentum
+                getItemLayout={(_, index) => ({
+                  length: HOURLY_SNAP_INTERVAL,
+                  offset: LIST_SIDE_PADDING + HOURLY_SNAP_INTERVAL * index,
+                  index,
+                })}
+                renderItem={({ item, index }) => {
+                  const badge = index === 0 ? 'Now' : index === 1 ? '+1h' : undefined;
+                  const hint = item.uv ? 'UV' : item.icon?.includes('rain') ? 'Rain' : undefined;
+
+                  return (
+                    <ForecastItem
+                      time={item.time}
+                      icon={item.icon}
+                      temperature={item.temp}
+                      badge={badge}
+                      hint={hint}
+                      softLightMode={softLightMode}
+                    />
+                  );
+                }}
+                contentContainerStyle={{
+                  paddingHorizontal: LIST_SIDE_PADDING,
+                }}
+              />
             </View>
-          )}
-        </AnimatedCard>
-
-        {/* Today - Hourly */}
-        <AnimatedCard index={1}>
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Today</Text>
-
-            <FlatList
-              ref={hourlyListRef}
-              data={data.hourly}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item: any) => item.time}
-              snapToOffsets={hourlySnapOffsets}
-              snapToAlignment="start"
-              decelerationRate="fast"
-              disableIntervalMomentum
-              getItemLayout={(_, index) => ({
-                length: HOURLY_SNAP_INTERVAL,
-                offset: LIST_SIDE_PADDING + HOURLY_SNAP_INTERVAL * index,
-                index,
-              })}
-              renderItem={({ item, index }) => {
-                const badge = index === 0 ? 'Now' : index === 1 ? '+1h' : undefined;
-                const hint = item.uv ? 'UV' : item.icon?.includes('rain') ? 'Rain' : undefined;
-
-                return (
-                  <ForecastItem
-                    time={item.time}
-                    icon={item.icon}
-                    temperature={item.temp}
-                    badge={badge}
-                    hint={hint}
-                    softLightMode={softLightMode}
-                  />
-                );
-              }}
-              contentContainerStyle={{
-                paddingHorizontal: LIST_SIDE_PADDING,
-              }}
-            />
           </View>
         </AnimatedCard>
 
@@ -207,7 +209,7 @@ export default function HomeScreen() {
         <View style={styles.sectionContainer}>
           <View style={styles.infoCardGrid}>
             {weatherDetailsWithExpanded.map((item: any, index) => (
-              <AnimatedCard key={item.title} index={index + 2}>
+              <AnimatedCard key={item.title} index={index + 1}>
                 <InfoCard {...item} softLightMode={softLightMode} />
               </AnimatedCard>
             ))}
@@ -215,7 +217,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Moon Energy */}
-        <AnimatedCard index={weatherDetailsWithExpanded.length + 3}>
+        <AnimatedCard index={weatherDetailsWithExpanded.length + 2}>
           <View
             style={[
               styles.moonSummaryCard,
@@ -270,12 +272,23 @@ const styles = StyleSheet.create({
   sectionContainer: {
     marginTop: 24,
   },
+  heroFrame: {
+    marginHorizontal: 16,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: 'rgba(108,74,255,0.16)',
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    overflow: 'hidden',
+    paddingBottom: 16,
+  },
+  heroFrameNight: {
+    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: MoonSenseColors.NightGrey,
-    marginBottom: 12,
-    marginLeft: 24,
   },
   infoCardGrid: {
     flexDirection: 'row',
