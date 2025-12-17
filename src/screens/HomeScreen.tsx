@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import AnimatedCard from '../components/AnimatedCard';
 import ForecastItem from '../components/ForecastItem';
@@ -39,6 +40,7 @@ export default function HomeScreen() {
   const hourlyListRef = useRef<FlatList<any>>(null);
 
   useScrollToTop(scrollRef);
+  const insets = useSafeAreaInsets();
 
   /** ⭐ 核心：每次回到 Home，自動把 Today 小時列表拉回最左 */
   useFocusEffect(
@@ -107,7 +109,7 @@ export default function HomeScreen() {
       <ScrollView
         ref={scrollRef}
         style={styles.container}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -253,7 +255,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   contentContainer: {
-    paddingVertical: 60,
+    // Removed paddingVertical to allow dynamic paddingTop from safe area insets
   },
   loadingState: {
     flex: 1,
