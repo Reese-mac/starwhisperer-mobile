@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Svg, { Circle, Defs, G, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
+import { CloudLayer } from '../decor/CloudLayer';
+import { MoonLayer } from '../decor/MoonLayer';
 
 type Variant = 'home' | 'forecast' | 'moon' | 'settings';
 
@@ -54,13 +56,17 @@ const Moon = ({ size }: { size: number }) => (
   </Svg>
 );
 
-export function ScreenDecorations({ variant = 'home' }: { variant?: Variant }) {
+export function ScreenDecorations({ variant = 'home', softLightMode }: { variant?: Variant, softLightMode?: boolean }) {
   const { width } = useWindowDimensions();
   const scale = width / 390;
   const gradientHeight = 520;
+  const isDaytime = !softLightMode;
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.clip]} pointerEvents="none">
+      <CloudLayer visible={isDaytime} />
+      <MoonLayer visible={!isDaytime} />
+
       <Svg width={width} height={gradientHeight} viewBox={`0 0 ${width} ${gradientHeight}`} style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id="headerGradient" x1="0" y1="0" x2="0" y2="1">

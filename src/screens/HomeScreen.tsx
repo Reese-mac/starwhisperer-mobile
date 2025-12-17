@@ -14,110 +14,220 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import AnimatedCard from '../components/AnimatedCard';
+
 import ForecastItem from '../components/ForecastItem';
+
 import HeaderBlock from '../components/HeaderBlock';
+
 import InfoCard from '../components/InfoCard';
+
 import MoonEnergyPopup from '../components/MoonEnergyPopup';
 
+import { ScreenDecorations } from '../components/decorations/ScreenDecorations';
+
+
+
 import { MoonSenseColors } from '../constants/colors';
+
 import { SAMPLE_DATA_NOTICE, useWeatherData } from '../hooks/useWeatherData';
+
 import { useSettings } from '../context/SettingsContext';
 
+
+
 const HOURLY_CARD_WIDTH = 70;
+
 const HOURLY_CARD_MARGIN = 6;
+
 const HOURLY_SNAP_INTERVAL = HOURLY_CARD_WIDTH + HOURLY_CARD_MARGIN * 2;
+
 const LIST_SIDE_PADDING = 16;
 
+
+
 export default function HomeScreen() {
+
   const router = useRouter();
+
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
+
+
   const { softLightMode } = useSettings();
+
   const { data, refreshing, refetch, error, lastUpdated } = useWeatherData();
+
   const isInfoBanner = error === SAMPLE_DATA_NOTICE;
 
+
+
   const scrollRef = useRef<ScrollView>(null);
+
   const hourlyListRef = useRef<FlatList<any>>(null);
 
+
+
   useScrollToTop(scrollRef);
+
   const insets = useSafeAreaInsets();
 
+
+
   /** ⭐ 核心：每次回到 Home，自動把 Today 小時列表拉回最左 */
+
   useFocusEffect(
+
     React.useCallback(() => {
+
       scrollRef.current?.scrollTo({ y: 0, animated: true });
 
+
+
       requestAnimationFrame(() => {
+
         hourlyListRef.current?.scrollToOffset({
+
           offset: 0,
+
           animated: false,
+
         });
+
       });
+
+
 
       return undefined;
+
     }, []),
+
   );
+
+
 
   const handleRefresh = () => {
+
     refetch();
 
+
+
     requestAnimationFrame(() => {
+
       hourlyListRef.current?.scrollToOffset({
+
         offset: 0,
+
         animated: false,
+
       });
+
     });
+
   };
 
+
+
   const hourlySnapOffsets = useMemo(
+
     () => (data?.hourly ?? []).map((_, index) => LIST_SIDE_PADDING + HOURLY_SNAP_INTERVAL * index),
+
     [data?.hourly],
+
   );
 
+
+
   const weatherDetailsWithExpanded = useMemo(() => {
+
     if (!data) return [];
+
     return data.details.map(item => {
+
       let expandedData;
+
       switch (item.type) {
+
         case 'airTemp':
+
           expandedData = data.tempTrend;
+
           break;
+
         case 'waterTemp':
+
           expandedData = data.waterTemp;
+
           break;
+
         case 'feelsLike':
+
           expandedData = data.advice;
+
           break;
+
         default:
+
           expandedData = undefined;
+
       }
+
       return { ...item, expandedData };
+
     });
+
   }, [data]);
 
+
+
   if (!data) {
+
     return (
+
       <View style={styles.loadingState}>
+
         <ActivityIndicator color={MoonSenseColors.CosmicPurple} size="large" />
+
         <Text style={styles.loadingText}>Preparing lunar briefing...</Text>
+
       </View>
+
     );
+
   }
 
+
+
   return (
+
     <View style={{ flex: 1, backgroundColor: softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow }}>
+
+      <ScreenDecorations softLightMode={softLightMode} />
+
       <ScrollView
+
         ref={scrollRef}
+
         style={styles.container}
-        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top }]}
+
+        contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top }]} 
+
         refreshControl={
+
           <RefreshControl
+
             refreshing={refreshing}
+
             onRefresh={handleRefresh}
+
             tintColor={MoonSenseColors.CosmicPurple}
+
           />
+
         }
+
       >
+
+
         {/* Header */}
         <AnimatedCard index={0}>
           <HeaderBlock
@@ -125,37 +235,15 @@ export default function HomeScreen() {
             city={data.header.city}
             description={data.header.description}
             cosmicWhisper={data.header.cosmicWhisper}
-            lastUpdated={lastUpdated}
+            lastUpdated={lastUpdated ?? undefined}
+            statusMessage={error ?? undefined}
+            statusVariant={isInfoBanner ? 'info' : 'error'}
             onMoonPress={() => router.push('/modal')}
             onLongMoonPress={() => setIsPopupVisible(true)}
             onCityPress={() => router.push('/(tabs)/settings')}
             onSettingsPress={() => router.push('/(tabs)/settings')}
             softLightMode={softLightMode}
           />
-
-          {error && (
-            <View
-              style={[
-                styles.statusBanner,
-                isInfoBanner ? styles.statusBannerInfo : styles.statusBannerError,
-              ]}
-            >
-              <View
-                style={[
-                  styles.statusDot,
-                  isInfoBanner ? styles.statusDotInfo : styles.statusDotError,
-                ]}
-              />
-              <Text
-                style={[
-                  styles.statusText,
-                  isInfoBanner ? styles.statusTextInfo : styles.statusTextError,
-                ]}
-              >
-                {error}
-              </Text>
-            </View>
-          )}
         </AnimatedCard>
 
         {/* Today - Hourly */}
@@ -279,52 +367,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     marginHorizontal: 8,
-  },
-  updatedAt: {
-    marginTop: 8,
-    textAlign: 'center',
-    color: MoonSenseColors.NightGrey,
-    opacity: 0.7,
-  },
-  statusBanner: {
-    marginTop: 10,
-    marginHorizontal: 24,
-    padding: 10,
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusBannerInfo: {
-    backgroundColor: '#F3EDFF',
-    borderWidth: 1,
-    borderColor: '#DDD0FF',
-  },
-  statusBannerError: {
-    backgroundColor: '#FCEDEA',
-    borderWidth: 1,
-    borderColor: '#F5B7A6',
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 8,
-  },
-  statusDotInfo: {
-    backgroundColor: MoonSenseColors.CosmicPurple,
-  },
-  statusDotError: {
-    backgroundColor: '#C0392B',
-  },
-  statusText: {
-    flex: 1,
-    fontSize: 13,
-  },
-  statusTextInfo: {
-    color: MoonSenseColors.NightGrey,
-  },
-  statusTextError: {
-    color: '#C0392B',
   },
   moonSummaryCard: {
     marginHorizontal: 16,
