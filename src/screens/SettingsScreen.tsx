@@ -2,9 +2,10 @@ import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TextInput, Switch, FlatList, TouchableOpacity } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { MoonSenseColors } from '../constants/colors';
 import { CITY_OPTIONS } from '../constants/cities';
 import { useSettings } from '../context/SettingsContext';
+import { getMoonTheme } from '../theme/moonTheme';
+import { MoonType } from '../theme/moonTypography';
 
 const SettingsScreen = () => {
   const {
@@ -18,6 +19,8 @@ const SettingsScreen = () => {
     setAutoLocate,
     setSoftLightMode,
   } = useSettings();
+  const theme = useMemo(() => getMoonTheme(softLightMode), [softLightMode]);
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [searchText, setSearchText] = useState('');
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
@@ -52,11 +55,11 @@ const SettingsScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Location</Text>
           <View style={styles.searchBarContainer}>
-            <Ionicons name="search" size={18} color={MoonSenseColors.OnSurfaceDisabled} style={{ marginRight: 8 }} />
+            <Ionicons name="search" size={18} color={styles.searchIconTint.color} style={{ marginRight: 8 }} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search for a city"
-              placeholderTextColor={MoonSenseColors.OnSurfaceDisabled}
+              placeholderTextColor={styles.placeholderTint.color}
               value={searchText}
               onChangeText={setSearchText}
             />
@@ -72,7 +75,7 @@ const SettingsScreen = () => {
                 <Text style={[styles.cityText, city.id === item.id && styles.cityTextActive]}>
                   {item.name} · {item.country}
                 </Text>
-                {city.id === item.id && <Ionicons name="checkmark-circle" size={20} color={MoonSenseColors.Primary} />}
+                {city.id === item.id && <Ionicons name="checkmark-circle" size={20} color={theme.primary} />}
               </TouchableOpacity>
             )}
             scrollEnabled={false}
@@ -80,9 +83,9 @@ const SettingsScreen = () => {
           <View style={styles.settingRow}>
             <Text style={styles.settingText}>Auto-locate</Text>
             <Switch
-              trackColor={{ false: MoonSenseColors.Surface, true: MoonSenseColors.Primary }}
-              thumbColor={MoonSenseColors.OnSurface}
-              ios_backgroundColor={MoonSenseColors.Surface}
+              trackColor={{ false: styles.switchTrackOff.color, true: styles.switchTrackOn.color }}
+              thumbColor={styles.switchThumb.color}
+              ios_backgroundColor={styles.switchTrackOff.color}
               onValueChange={setAutoLocate}
               value={autoLocate}
             />
@@ -94,9 +97,9 @@ const SettingsScreen = () => {
           <View style={styles.settingRow}>
             <Text style={styles.settingText}>Units (°C / °F)</Text>
             <Switch
-              trackColor={{ false: MoonSenseColors.Surface, true: MoonSenseColors.Primary }}
-              thumbColor={MoonSenseColors.OnSurface}
-              ios_backgroundColor={MoonSenseColors.Surface}
+              trackColor={{ false: styles.switchTrackOff.color, true: styles.switchTrackOn.color }}
+              thumbColor={styles.switchThumb.color}
+              ios_backgroundColor={styles.switchTrackOff.color}
               onValueChange={value => setUnit(value ? 'celsius' : 'fahrenheit')}
               value={unit === 'celsius'}
             />
@@ -104,9 +107,9 @@ const SettingsScreen = () => {
           <View style={styles.settingRow}>
             <Text style={styles.settingText}>Night Mode</Text>
             <Switch
-              trackColor={{ false: MoonSenseColors.Surface, true: MoonSenseColors.Primary }}
-              thumbColor={MoonSenseColors.OnSurface}
-              ios_backgroundColor={MoonSenseColors.Surface}
+              trackColor={{ false: styles.switchTrackOff.color, true: styles.switchTrackOn.color }}
+              thumbColor={styles.switchThumb.color}
+              ios_backgroundColor={styles.switchTrackOff.color}
               onValueChange={setSoftLightMode}
               value={softLightMode}
             />
@@ -123,52 +126,64 @@ const SettingsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ReturnType<typeof getMoonTheme>) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: MoonSenseColors.Background,
+    backgroundColor: theme.background,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 130,
   },
   titleRow: {
     paddingHorizontal: 24,
     marginTop: 20,
     marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: MoonSenseColors.OnSurface,
+    ...MoonType.screenTitle,
+    color: theme.text,
   },
   section: {
     marginBottom: 20,
     paddingHorizontal: 24,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: MoonSenseColors.OnSurface,
+    ...MoonType.sectionTitle,
+    color: theme.text,
     marginBottom: 15,
   },
   searchBarContainer: {
-    backgroundColor: MoonSenseColors.Surface,
-    borderRadius: 12,
+    backgroundColor: theme.surface,
+    borderRadius: theme.radiusMd,
     paddingHorizontal: 15,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+    borderWidth: 0,
+  },
+  searchIconTint: {
+    color: theme.textMuted,
+  },
+  placeholderTint: {
+    color: theme.textMuted,
   },
   searchInput: {
     flex: 1,
     height: 48,
     fontSize: 16,
-    color: MoonSenseColors.OnSurface,
+    color: theme.text,
+    borderWidth: 0,
+    borderColor: 'transparent',
+    outlineStyle: 'none',
   },
   cityItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: `rgba(255, 255, 255, 0.08)`,
+    borderBottomColor: theme.border,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -178,10 +193,10 @@ const styles = StyleSheet.create({
   },
   cityText: {
     fontSize: 16,
-    color: MoonSenseColors.OnSurfaceMedium,
+    color: theme.textMuted,
   },
   cityTextActive: {
-    color: MoonSenseColors.Primary,
+    color: theme.primary,
     fontWeight: '600',
   },
   settingRow: {
@@ -190,19 +205,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: `rgba(255, 255, 255, 0.08)`,
+    borderBottomColor: theme.border,
   },
   settingText: {
     fontSize: 16,
-    color: MoonSenseColors.OnSurfaceMedium,
+    color: theme.textMuted,
   },
   brandInfo: {
-    fontSize: 14,
-    color: MoonSenseColors.OnSurfaceDisabled,
+    ...MoonType.body,
+    color: theme.textMuted,
     marginBottom: 5,
   },
   loadingText: {
-    color: MoonSenseColors.OnSurfaceMedium,
+    color: theme.textMuted,
+  },
+  switchTrackOff: {
+    color: theme.surfaceAlt,
+  },
+  switchTrackOn: {
+    color: theme.primary,
+  },
+  switchThumb: {
+    color: theme.text,
   },
 });
 

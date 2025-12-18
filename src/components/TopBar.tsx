@@ -1,26 +1,32 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MoonSenseColors } from '../constants/colors';
+import { getMoonTheme } from '../theme/moonTheme';
+import { MoonType } from '../theme/moonTypography';
 
 interface TopBarProps {
   city: string;
   onCityPress: () => void;
   onSettingsPress: () => void;
+  softLightMode: boolean;
 }
 
-export function TopBar({ city, onCityPress, onSettingsPress }: TopBarProps) {
+export function TopBar({ city, onCityPress, onSettingsPress, softLightMode }: TopBarProps) {
+  const theme = getMoonTheme(softLightMode);
   return (
     <View style={styles.headerRow}>
-      <TouchableOpacity onPress={onCityPress} activeOpacity={0.8}>
-        <Text style={styles.locationLabel}>Observing</Text>
+      <TouchableOpacity onPress={onCityPress} activeOpacity={0.8} style={styles.cityBlock}>
+        <Text style={[styles.locationLabel, { color: theme.textMuted }]}>Observing</Text>
         <View style={styles.cityRow}>
-          <Ionicons name="location-outline" size={18} color={MoonSenseColors.OnSurface} />
-          <Text style={styles.city}>{city}</Text>
+          <Text style={[styles.city, { color: theme.text }]}>{city}</Text>
         </View>
       </TouchableOpacity>
-      <TouchableOpacity onPress={onSettingsPress} accessibilityRole="button">
-        <Ionicons name="settings-outline" size={22} color={MoonSenseColors.OnSurface} />
+      <TouchableOpacity
+        onPress={onSettingsPress}
+        accessibilityRole="button"
+        style={[styles.iconPill, styles.settingsButton, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}
+      >
+        <Ionicons name="settings-outline" size={20} color={theme.text} />
       </TouchableOpacity>
     </View>
   );
@@ -28,15 +34,18 @@ export function TopBar({ city, onCityPress, onSettingsPress }: TopBarProps) {
 
 const styles = StyleSheet.create({
   headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 16,
   },
+  cityBlock: {
+    alignItems: 'center',
+    gap: 4,
+  },
   locationLabel: {
-    color: MoonSenseColors.OnSurfaceMedium,
-    fontSize: 12,
+    ...MoonType.labelCaps,
+    letterSpacing: 1,
   },
   cityRow: {
     flexDirection: 'row',
@@ -45,8 +54,21 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   city: {
-    color: MoonSenseColors.OnSurface,
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 16,
+    letterSpacing: 0.2,
+  },
+  iconPill: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  settingsButton: {
+    position: 'absolute',
+    right: 20,
+    top: 16,
   },
 });

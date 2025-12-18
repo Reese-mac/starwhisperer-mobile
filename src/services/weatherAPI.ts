@@ -201,7 +201,7 @@ const buildDaily = (weather: WeatherServiceResponse): DailyForecastItem[] => {
       low: `${Math.round(day.temp_min)}°`,
       icon: iconFromCondition(day.weather),
       humidity: day.humidity ? `${day.humidity}%` : '--',
-      uv: day.uvi !== undefined ? day.uvi.toFixed(1) : '--',
+      uv: day.uvi !== undefined ? day.uvi.toFixed(1) : weather.current?.uvi?.toFixed(1) ?? '--',
       summary,
     };
   });

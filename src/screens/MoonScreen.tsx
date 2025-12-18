@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import AnimatedCard from '../components/AnimatedCard';
-import { MoonSenseColors } from '../constants/colors';
+import StatusBanner from '../components/StatusBanner';
 import { useSettings } from '../context/SettingsContext';
 import { getMoonPhases as getMockMoonPhases } from '../services/mockAPI';
 import { fetchMoonPhases as fetchLiveMoonPhases, MoonPhaseEntry } from '../services/weatherAPI';
+import { getMoonTheme } from '../theme/moonTheme';
+import { MoonType } from '../theme/moonTypography';
+import { MoonSenseColors } from '../constants/colors';
 
 const rituals = [
   { title: 'Intentions', detail: 'Write one line of gratitude before bed.' },
@@ -30,52 +32,16 @@ const PhaseItem = ({
     onPress={onSelect}
     activeOpacity={0.85}
   >
-    <Text style={[styles.phaseEmoji, active && styles.phaseEmojiActive]}>
-      {getPhaseEmoji(phase?.phaseValue, phase?.name)}
-    </Text>
+    <View style={[styles.phaseDot, active && styles.phaseDotActive]} />
     <Text style={[styles.phaseName, active && styles.phaseNameActive]}>{phase.name}</Text>
     <Text style={[styles.phaseSub, active && styles.phaseNameActive]}>{phase.illumination}</Text>
   </TouchableOpacity>
 );
 
-const getPhaseEmoji = (phaseValue?: number, name?: string) => {
-  if (typeof phaseValue === 'number' && !Number.isNaN(phaseValue)) {
-    const normalized = ((phaseValue % 1) + 1) % 1;
-    if (normalized <= 0.03 || normalized >= 0.97) return '🌑';
-    if (normalized <= 0.22) return '🌒';
-    if (normalized <= 0.28) return '🌓';
-    if (normalized <= 0.47) return '🌔';
-    if (normalized <= 0.53) return '🌕';
-    if (normalized <= 0.72) return '🌖';
-    if (normalized <= 0.78) return '🌗';
-    return '🌘';
-  }
-
-  switch (name) {
-    case 'New Moon':
-      return '🌑';
-    case 'Waxing Crescent':
-      return '🌒';
-    case 'First Quarter':
-      return '🌓';
-    case 'Waxing Gibbous':
-      return '🌔';
-    case 'Full Moon':
-      return '🌕';
-    case 'Waning Gibbous':
-      return '🌖';
-    case 'Last Quarter':
-      return '🌗';
-    case 'Waning Crescent':
-      return '🌘';
-    default:
-      return '🌙';
-  }
-};
-
 const MoonScreen = () => {
   const { city, softLightMode } = useSettings();
-  const styles = useMemo(() => createStyles(softLightMode), [softLightMode]);
+  const theme = useMemo(() => getMoonTheme(softLightMode), [softLightMode]);
+  const styles = useMemo(() => createStyles(softLightMode, theme), [softLightMode, theme]);
   const [phases, setPhases] = useState<MoonPhaseEntry[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -113,55 +79,44 @@ const MoonScreen = () => {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={MoonSenseColors.CosmicPurple} />
+      <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
         <Text style={styles.loadingText}>Aligning with lunar calendar...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      ref={scrollRef}
-      style={[styles.container, { backgroundColor: softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow }]}
-      contentContainerStyle={styles.contentContainer}
-    >
-      {statusMessage && (
-        <View style={styles.statusBanner}>
-          <View style={styles.statusDot} />
-          <Text style={styles.statusText}>{statusMessage}</Text>
-        </View>
-      )}
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <ScrollView ref={scrollRef} style={[styles.scroll, { backgroundColor: theme.background }]} contentContainerStyle={styles.contentContainer}>
+        {statusMessage ? <StatusBanner message={statusMessage} softLightMode={softLightMode} /> : null}
 
-      {selectedPhase && (
-        <AnimatedCard index={0}>
-          <View style={styles.hero}>
-            <Text style={styles.heroLabel}>Current phase</Text>
-            <View style={styles.heroTitleRow}>
-              <Text style={styles.heroTitle}>{selectedPhase.name}</Text>
-              {selectedPhase.name === 'Waning Crescent' ? (
-                <Ionicons name="telescope-outline" size={26} color="#FFFFFF" style={styles.heroTitleIcon} />
-              ) : null}
-            </View>
-            <Text style={styles.heroDescription}>{selectedPhase.description}</Text>
+        {selectedPhase && (
+          <AnimatedCard index={0}>
+            <View style={styles.hero}>
+              <Text style={styles.heroLabel}>Current phase</Text>
+              <View style={styles.heroTitleRow}>
+                <Text style={styles.heroTitle}>{selectedPhase.name}</Text>
+              </View>
+              <Text style={styles.heroDescription}>{selectedPhase.description}</Text>
 
-            <View style={styles.heroMetaRow}>
-              <View style={styles.metaBlock}>
-                <Text style={styles.metaLabel}>Rise</Text>
-                <Text style={styles.metaValue}>{selectedPhase.riseTime}</Text>
-              </View>
-              <View style={styles.metaBlock}>
-                <Text style={styles.metaLabel}>Set</Text>
-                <Text style={styles.metaValue}>{selectedPhase.setTime}</Text>
-              </View>
-              <View style={styles.metaBlock}>
-                <Text style={styles.metaLabel}>Illumination</Text>
-                <Text style={styles.metaValue}>{selectedPhase.illumination}</Text>
+              <View style={styles.heroMetaRow}>
+                <View style={styles.metaBlock}>
+                  <Text style={styles.metaLabel}>Rise</Text>
+                  <Text style={styles.metaValue}>{selectedPhase.riseTime}</Text>
+                </View>
+                <View style={styles.metaBlock}>
+                  <Text style={styles.metaLabel}>Set</Text>
+                  <Text style={styles.metaValue}>{selectedPhase.setTime}</Text>
+                </View>
+                <View style={styles.metaBlock}>
+                  <Text style={styles.metaLabel}>Illumination</Text>
+                  <Text style={styles.metaValue}>{selectedPhase.illumination}</Text>
+                </View>
               </View>
             </View>
-          </View>
-        </AnimatedCard>
-      )}
+          </AnimatedCard>
+        )}
 
       <AnimatedCard index={1}>
         <View style={styles.phaseListWrapper}>
@@ -198,109 +153,119 @@ const MoonScreen = () => {
           ))}
         </View>
       </AnimatedCard>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
-const createStyles = (softLightMode: boolean) => {
-  const textPrimary = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
-  const textSecondary = softLightMode ? 'rgba(255,255,255,0.8)' : MoonSenseColors.OrbitGrey;
-  const cardBg = softLightMode ? '#3A3B46' : MoonSenseColors.MoonWhite;
-  const pillBg = softLightMode ? 'rgba(255,255,255,0.08)' : MoonSenseColors.MistBlue;
-  const borderColor = softLightMode ? 'rgba(255,255,255,0.2)' : 'rgba(73,74,87,0.1)';
+const createStyles = (softLightMode: boolean, theme: ReturnType<typeof getMoonTheme>) => {
+  // Align styling with other pages: white cards with themed text/borders
+  const textPrimary = theme.text;
+  const textSecondary = theme.textMuted;
+  const cardBg = theme.surface;
+  const pillBg = theme.surfaceAlt;
+  const borderColor = theme.border;
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: 'transparent' },
-    contentContainer: { paddingTop: 60, paddingBottom: 80 },
+    scroll: { backgroundColor: 'transparent' },
+    contentContainer: { paddingTop: 60, paddingBottom: 130 },
     center: { justifyContent: 'center', alignItems: 'center' },
     loadingText: { marginTop: 12, color: textPrimary },
 
-    statusBanner: {
-      margin: 16,
-      padding: 12,
-      borderRadius: 16,
-      backgroundColor: softLightMode ? '#3A3B46' : '#F3EDFF',
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderWidth: softLightMode ? 1 : 0,
-      borderColor,
-    },
-    statusDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: MoonSenseColors.CosmicPurple,
-      marginRight: 8,
-    },
     statusText: { color: textPrimary, fontSize: 13 },
 
     hero: {
       marginHorizontal: 16,
-      borderRadius: 28,
-      padding: 26,
-      backgroundColor: MoonSenseColors.MidnightIndigo,
+      borderRadius: theme.radiusLg,
+      padding: theme.spaceLg,
+      backgroundColor: cardBg,
       overflow: 'hidden',
       position: 'relative',
+      borderWidth: 1,
+      borderColor,
     },
 
-    heroLabel: { color: '#B8B7D6', fontSize: 12, letterSpacing: 2, zIndex: 1 },
+    heroLabel: { ...MoonType.labelCaps, color: textSecondary, zIndex: 1 },
     heroTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12, zIndex: 1 },
-    heroTitle: { color: '#fff', fontSize: 32, fontWeight: '700', zIndex: 1 },
+    heroTitle: {
+      ...MoonType.cardTitle,
+      color: textPrimary,
+      fontSize: 32,
+      zIndex: 1,
+    },
     heroTitleIcon: { marginTop: 2 },
-    heroDescription: { color: '#F4F0FF', marginTop: 6, zIndex: 1 },
+    heroDescription: {
+      ...MoonType.body,
+      color: textSecondary,
+      marginTop: 6,
+      zIndex: 1,
+    },
 
-    heroMetaRow: { flexDirection: 'row', gap: 14, marginTop: 24, zIndex: 1 },
+    heroMetaRow: { flexDirection: 'row', gap: 14, marginTop: theme.spaceLg, zIndex: 1 },
     metaBlock: {
       flex: 1,
-      borderRadius: 18,
-      backgroundColor: 'rgba(255,255,255,0.1)',
-      padding: 12,
+      borderRadius: theme.radiusMd,
+      backgroundColor: cardBg,
+      padding: theme.spaceSm,
+      borderWidth: 1,
+      borderColor,
     },
-    metaLabel: { color: '#B8B7D6', fontSize: 12 },
-    metaValue: { color: '#fff', fontSize: 16, fontWeight: '600', marginTop: 6 },
+    metaLabel: { ...MoonType.labelCaps, color: textSecondary },
+    metaValue: {
+      ...MoonType.bodyStrong,
+      color: textPrimary,
+      fontSize: 16,
+      marginTop: 6,
+      fontVariant: ['tabular-nums'],
+    },
 
     phaseListWrapper: {
       margin: 16,
-      borderRadius: 24,
-      padding: 18,
+      borderRadius: theme.radiusLg,
+      padding: theme.spaceMd,
       backgroundColor: cardBg,
-      borderWidth: softLightMode ? 1 : 0,
+      borderWidth: 1,
       borderColor,
     },
-    sectionTitle: { fontSize: 20, fontWeight: '700', marginBottom: 12, color: textPrimary },
+    sectionTitle: { ...MoonType.sectionTitle, marginBottom: 12, color: textPrimary },
 
     phaseItem: {
-      borderRadius: 18,
-      padding: 14,
+      borderRadius: theme.radiusMd,
+      padding: theme.spaceSm,
       borderWidth: 1,
       borderColor,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 14,
       marginBottom: 10,
-      backgroundColor: softLightMode ? '#353643' : MoonSenseColors.MoonWhite,
+      backgroundColor: cardBg,
     },
     phaseItemActive: {
-      backgroundColor: MoonSenseColors.CosmicPurple,
-      borderColor: MoonSenseColors.CosmicPurple,
+      backgroundColor: cardBg,
+      borderColor: theme.primary,
     },
-    phaseEmoji: {
-      width: 28,
-      textAlign: 'center',
-      fontSize: 20,
+    phaseDot: {
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      backgroundColor: theme.primary,
+      marginLeft: 2,
+      marginRight: 2,
+      opacity: 0.9,
     },
-    phaseEmojiActive: {
-      opacity: 0.95,
+    phaseDotActive: {
+      opacity: 1,
     },
-    phaseName: { fontWeight: '600', flex: 1, color: textPrimary },
-    phaseSub: { fontSize: 12, color: textSecondary },
-    phaseNameActive: { color: '#fff' },
+    phaseName: { ...MoonType.bodyStrong, flex: 1, color: textPrimary },
+    phaseSub: { ...MoonType.caption, color: textSecondary },
+    phaseNameActive: { color: theme.primary },
 
     ritualCard: {
       margin: 16,
-      borderRadius: 24,
-      padding: 22,
-      backgroundColor: pillBg,
-      borderWidth: softLightMode ? 1 : 0,
+      borderRadius: theme.radiusLg,
+      padding: theme.spaceMd,
+      backgroundColor: cardBg,
+      borderWidth: 1,
       borderColor,
     },
     ritualRow: { flexDirection: 'row', gap: 14, marginTop: 16 },
@@ -308,13 +273,15 @@ const createStyles = (softLightMode: boolean) => {
       width: 36,
       height: 36,
       borderRadius: 18,
-      backgroundColor: softLightMode ? '#4A4B58' : MoonSenseColors.MoonWhite,
+      backgroundColor: cardBg,
       justifyContent: 'center',
       alignItems: 'center',
+      borderWidth: 1,
+      borderColor,
     },
-    ritualIndexText: { fontWeight: '700', color: textPrimary },
-    ritualTitle: { fontWeight: '600', color: textPrimary },
-    ritualDetail: { color: textSecondary },
+    ritualIndexText: { ...MoonType.bodyStrong, color: textPrimary },
+    ritualTitle: { ...MoonType.bodyStrong, color: textPrimary },
+    ritualDetail: { ...MoonType.body, color: textSecondary },
   });
 };
 

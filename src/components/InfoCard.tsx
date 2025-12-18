@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MoonSenseColors } from '../constants/colors';
+import { getMoonTheme } from '../theme/moonTheme';
+import { MoonType } from '../theme/moonTypography';
 
 const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   drop: 'water-outline',
@@ -14,49 +15,41 @@ const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   'sun-rain': 'rainy-outline',
 };
 
-const CardIcon = ({ icon }: { icon: string }) => (
-  <View style={styles.iconContainer}>
-    <Ionicons name={iconMap[icon] || 'planet-outline'} size={20} color={MoonSenseColors.OnSurfaceMedium} />
-  </View>
-);
-
 export type InfoCardProps = {
   title: string;
   value: string;
   icon: string;
+  backgroundColor?: string;
+  softLightMode?: boolean;
+  variant?: 'primary' | 'secondary';
 };
 
-const splitValue = (raw: string) => {
-  const trimmed = raw.trim();
-  const match = trimmed.match(/^(-?\d+(?:\.\d+)?)(.*)$/);
-  if (!match) return { number: trimmed, unit: '' };
-  return { number: match[1], unit: match[2] ?? '' };
-};
-
-const InfoCard = ({ title, value, icon }: InfoCardProps) => {
-  const parsedValue = splitValue(value);
+const InfoCard = ({ title, value, icon, backgroundColor, softLightMode = false, variant = 'secondary' }: InfoCardProps) => {
+  const theme = useMemo(() => getMoonTheme(softLightMode), [softLightMode]);
+  const cardBg = theme.surface;
+  const iconFill = backgroundColor ?? theme.primarySoft;
 
   return (
-    <View style={styles.cardContainer}>
+    <View style={[styles.cardContainer, { backgroundColor: cardBg, borderColor: theme.border }]}>
       <View style={styles.header}>
-        <CardIcon icon={icon} />
-        <Text style={styles.title}>{title}</Text>
+        <View style={[styles.iconContainer, { backgroundColor: iconFill, borderColor: theme.border }]}>
+          <Ionicons name={iconMap[icon] || 'planet-outline'} size={20} color={theme.text} />
+        </View>
+        <Text style={[styles.title, { color: theme.textMuted }]}>{title}</Text>
       </View>
-      <Text style={styles.value}>
-        <Text style={styles.valueNumber}>{parsedValue.number}</Text>
-        {parsedValue.unit && <Text style={styles.valueUnit}>{parsedValue.unit}</Text>}
-      </Text>
+      <Text style={[styles.valueNumber, { color: theme.text }]}>{value}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: MoonSenseColors.Surface,
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 16,
     flex: 1,
     margin: 8,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
@@ -67,29 +60,19 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
   },
   title: {
-    fontSize: 14,
-    color: MoonSenseColors.OnSurfaceMedium,
     marginLeft: 10,
     fontWeight: '500',
-  },
-  value: {
-    fontSize: 36,
-    color: MoonSenseColors.OnSurface,
-    marginTop: 4,
+    ...MoonType.labelCaps,
+    textTransform: 'none',
+    letterSpacing: 0.6,
   },
   valueNumber: {
-    fontWeight: '600',
-  },
-  valueUnit: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: MoonSenseColors.OnSurfaceDisabled,
-    marginLeft: 2,
+    ...MoonType.numberMetric,
   },
 });
 

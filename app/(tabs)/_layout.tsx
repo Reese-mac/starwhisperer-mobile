@@ -1,5 +1,9 @@
-import { Tabs } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import React, { useMemo } from 'react';
+import { Platform } from 'react-native';
+import { Tabs } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useSettings } from '../../src/context/SettingsContext';
+import { getMoonTheme } from '../../src/theme/moonTheme';
 
 const TAB_ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
   home: { active: "home", inactive: "home-outline" },
@@ -10,17 +14,43 @@ const TAB_ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; inacti
 };
 
 export default function TabsLayout() {
+  const { softLightMode } = useSettings();
+  const theme = useMemo(() => getMoonTheme(softLightMode), [softLightMode]);
+
   return (
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#6C4AFF",
-        tabBarInactiveTintColor: "#9EA1B4",
-        tabBarLabelStyle: { fontSize: 12 },
+        tabBarHideOnKeyboard: true,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: softLightMode ? 'rgba(255,255,255,0.55)' : 'rgba(43,45,66,0.48)',
+        tabBarLabelStyle: { fontSize: 12, marginTop: 2 },
+        tabBarStyle: {
+          position: 'absolute',
+          left: 12,
+          right: 12,
+          bottom: 12,
+          height: 64,
+          paddingTop: 6,
+          paddingBottom: Platform.OS === 'ios' ? 12 : 10,
+          borderTopWidth: 1,
+          borderRadius: 20,
+          backgroundColor: theme.tabBarBg,
+          borderWidth: 1,
+          borderColor: theme.tabBarBorder,
+          shadowColor: 'transparent',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0,
+          shadowRadius: 0,
+          elevation: 0,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
+        },
         tabBarIcon: ({ color, focused }) => {
           const config = TAB_ICONS[route.name] ?? { active: "ellipse", inactive: "ellipse-outline" };
           const iconName = focused ? config.active : config.inactive;
-          return <Ionicons name={iconName} size={20} color={color} />;
+          return <Ionicons name={iconName} size={22} color={color} />;
         },
       })}
     >

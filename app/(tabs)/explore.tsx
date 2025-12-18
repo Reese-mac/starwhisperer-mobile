@@ -3,19 +3,23 @@ import { SafeAreaView, View, Text, StyleSheet, TextInput, FlatList, TouchableOpa
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import ListCard from '../../src/components/ListCard';
+import StatusBanner from '../../src/components/StatusBanner';
 import { MoonSenseColors } from '../../src/constants/colors';
 import { CITY_OPTIONS, CityOption } from '../../src/constants/cities';
 import { fetchCitySnapshot } from '../../src/services/weatherAPI';
 import { searchCity } from '../../api/WeatherService';
 import { getCities as getMockCities } from '../../src/services/mockAPI';
 import { useSettings } from '../../src/context/SettingsContext';
+import { getMoonTheme } from '../../src/theme/moonTheme';
+import { MoonType } from '../../src/theme/moonTypography';
 
 const CARD_COLORS = [MoonSenseColors.MoonLavender, MoonSenseColors.MistBlue, MoonSenseColors.SoftIndigo];
 
 const ExploreScreen = () => {
   const { unit, softLightMode } = useSettings();
   const listRef = useRef<FlatList<any>>(null);
-  const styles = useMemo(() => createStyles(softLightMode), [softLightMode]);
+  const theme = useMemo(() => getMoonTheme(softLightMode), [softLightMode]);
+  const styles = useMemo(() => createStyles(softLightMode, theme), [softLightMode, theme]);
   useScrollToTop(listRef);
   useFocusEffect(
     React.useCallback(() => {
@@ -175,17 +179,9 @@ const ExploreScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>Explore</Text>
-        <View pointerEvents="none" style={styles.cityIcon}>
-          <Ionicons name="business-outline" size={22} color={styles.searchIconColor.color} />
-        </View>
       </View>
 
-      {statusMessage ? (
-        <View style={styles.statusBanner}>
-          <View style={styles.statusDot} />
-          <Text style={styles.statusLabel}>{statusMessage}</Text>
-        </View>
-      ) : null}
+      {statusMessage ? <StatusBanner message={statusMessage} softLightMode={softLightMode} /> : null}
 
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={18} color={styles.searchIconColor.color} style={styles.searchIcon} />
@@ -218,7 +214,7 @@ const ExploreScreen = () => {
       {query.trim().length >= 2 ? (
         searchLoading ? (
           <View style={styles.loadingState}>
-            <ActivityIndicator color={MoonSenseColors.CosmicPurple} />
+            <ActivityIndicator color={theme.primary} />
             <Text style={styles.loadingLabel}>Searching cities...</Text>
           </View>
         ) : (
@@ -239,7 +235,7 @@ const ExploreScreen = () => {
         )
       ) : loading ? (
         <View style={styles.loadingState}>
-          <ActivityIndicator color={MoonSenseColors.CosmicPurple} />
+          <ActivityIndicator color={theme.primary} />
           <Text style={styles.loadingLabel}>Syncing cities...</Text>
         </View>
       ) : (
@@ -257,19 +253,18 @@ const ExploreScreen = () => {
   );
 };
 
-const createStyles = (softLightMode: boolean) => {
-  const textColor = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
-  const mutedColor = softLightMode ? 'rgba(255,255,255,0.75)' : MoonSenseColors.OrbitGrey;
-  const borderColor = softLightMode ? 'rgba(255,255,255,0.15)' : 'rgba(73,74,87,0.2)';
-  const searchBg = softLightMode ? '#5A5B68' : MoonSenseColors.MistBlue;
+const createStyles = (softLightMode: boolean, theme: ReturnType<typeof getMoonTheme>) => {
+  const textColor = theme.text;
+  const mutedColor = theme.textMuted;
+  const borderColor = theme.border;
+  const searchBg = theme.surface;
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow,
+      backgroundColor: theme.background,
     },
     title: {
-      fontSize: 28,
-      fontWeight: 'bold',
+      ...MoonType.screenTitle,
       color: textColor,
       paddingHorizontal: 24,
       paddingTop: 40,
@@ -295,11 +290,13 @@ const createStyles = (softLightMode: boolean) => {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: searchBg,
-      borderRadius: 18,
+      borderRadius: theme.radiusLg,
       marginHorizontal: 16,
       paddingHorizontal: 16,
       marginVertical: 10,
       height: 50,
+      borderWidth: 1,
+      borderColor,
     },
     searchIcon: {
       marginRight: 10,
@@ -321,27 +318,26 @@ const createStyles = (softLightMode: boolean) => {
       marginBottom: 10,
     },
     filterChip: {
-      borderRadius: 16,
+      borderRadius: theme.radiusMd,
       borderWidth: 1,
       borderColor,
       paddingHorizontal: 14,
       paddingVertical: 6,
     },
     filterChipActive: {
-      backgroundColor: MoonSenseColors.CosmicPurple,
-      borderColor: MoonSenseColors.CosmicPurple,
+      backgroundColor: theme.primary,
+      borderColor: theme.primary,
     },
     filterLabel: {
-      fontSize: 12,
+      ...MoonType.labelCaps,
       color: mutedColor,
-      textTransform: 'uppercase',
     },
     filterLabelActive: {
       color: '#fff',
     },
     listContainer: {
       paddingTop: 10,
-      paddingBottom: 40,
+      paddingBottom: 130,
     },
     loadingState: {
       marginTop: 40,
@@ -350,22 +346,6 @@ const createStyles = (softLightMode: boolean) => {
     loadingLabel: {
       marginTop: 8,
       color: mutedColor,
-    },
-    statusBanner: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginHorizontal: 16,
-      marginBottom: 12,
-      padding: 10,
-      borderRadius: 14,
-      backgroundColor: softLightMode ? '#3A3B46' : '#F3EDFF',
-    },
-    statusDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: MoonSenseColors.CosmicPurple,
-      marginRight: 8,
     },
     statusLabel: {
       flex: 1,

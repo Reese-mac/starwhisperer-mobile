@@ -8,6 +8,7 @@ interface HeaderBlockProps {
   temperature: string;
   description: string;
   rangeText?: string;
+  softLightMode: boolean;
   onCityPress: () => void;
   onSettingsPress: () => void;
 }
@@ -17,13 +18,19 @@ export const HeaderBlock = ({
   temperature,
   description,
   rangeText,
+  softLightMode,
   onCityPress,
   onSettingsPress,
 }: HeaderBlockProps) => {
   return (
     <View style={styles.container}>
-      <TopBar city={city} onCityPress={onCityPress} onSettingsPress={onSettingsPress} />
-      <TemperatureBlock temperature={temperature} description={description} rangeText={rangeText} />
+      <TopBar city={city} onCityPress={onCityPress} onSettingsPress={onSettingsPress} softLightMode={softLightMode} />
+      <TemperatureBlock
+        temperature={temperature}
+        description={description}
+        rangeText={rangeText}
+        softLightMode={softLightMode}
+      />
     </View>
   );
 };

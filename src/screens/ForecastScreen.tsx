@@ -13,9 +13,11 @@ import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AnimatedCard from '../components/AnimatedCard';
 import ForecastItem from '../components/ForecastItem';
-import { MoonSenseColors } from '../constants/colors';
+import StatusBanner from '../components/StatusBanner';
 import { useSettings } from '../context/SettingsContext';
 import { useWeatherData } from '../hooks/useWeatherData';
+import { getMoonTheme } from '../theme/moonTheme';
+import { MoonType } from '../theme/moonTypography';
 
 const HOURLY_CARD_WIDTH = 70;
 const HOURLY_CARD_MARGIN = 6;
@@ -68,8 +70,9 @@ const DayCard = ({
 const ForecastScreen = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { softLightMode } = useSettings();
+  const theme = useMemo(() => getMoonTheme(softLightMode), [softLightMode]);
   const { data, refreshing, refetch } = useWeatherData();
-  const styles = useMemo(() => createStyles(softLightMode), [softLightMode]);
+  const styles = useMemo(() => createStyles(softLightMode, theme), [softLightMode, theme]);
   const scrollRef = useRef<ScrollView>(null);
   const dayListRef = useRef<FlatList<any>>(null);
   const hourlyListRef = useRef<FlatList<any>>(null);
@@ -126,8 +129,8 @@ const ForecastScreen = () => {
   if (!data) {
     return (
       <View style={styles.loadingState}>
-        <ActivityIndicator color={MoonSenseColors.CosmicPurple} size="large" />
-        <Text style={{ color: MoonSenseColors.NightGrey, marginTop: 12 }}>Calling the weather oracles...</Text>
+        <ActivityIndicator color={theme.primary} size="large" />
+        <Text style={{ color: theme.textMuted, marginTop: 12 }}>Calling the weather oracles...</Text>
       </View>
     );
   }
@@ -146,20 +149,22 @@ const ForecastScreen = () => {
   };
 
   return (
-    <ScrollView
-      ref={scrollRef}
-      style={[styles.container, { backgroundColor: softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow }]}
-      contentContainerStyle={styles.contentContainer}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={MoonSenseColors.CosmicPurple} />}
-    >
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <ScrollView
+        ref={scrollRef}
+        style={[styles.scroll, { backgroundColor: theme.background }]}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.primary} />}
+      >
       <AnimatedCard index={0}>
         <View style={styles.heroCard}>
           <View style={styles.heroTitleRow}>
             <Text style={styles.heroTitle}>Weekly outlook</Text>
-            <Ionicons name="calendar-outline" size={22} color={styles.heroTitle.color} />
           </View>
           <Text style={styles.heroSubtitle}>Tap a day to reveal rituals and conditions.</Text>
-          {!hasDailyData ? <Text style={styles.fallbackNote}>Daily forecast not available; using an hourly snapshot.</Text> : null}
+          {!hasDailyData ? (
+            <StatusBanner message="Daily forecast not available; using an hourly snapshot." softLightMode={softLightMode} />
+          ) : null}
           <FlatList
             ref={dayListRef}
             data={safeDaily}
@@ -199,7 +204,7 @@ const ForecastScreen = () => {
       <AnimatedCard index={2}>
         <View style={[styles.hourlyContainer, softLightMode && styles.hourlyContainerDark]}>
           <View style={styles.hourlyHeader}>
-            <Text style={styles.sectionTitle}>Hourly alignment</Text>
+            <Text style={[styles.sectionTitle, styles.sectionTitleIndented]}>Hourly alignment</Text>
             <Text style={styles.sectionHint}>Best windows to step outside</Text>
           </View>
           <FlatList
@@ -222,7 +227,7 @@ const ForecastScreen = () => {
                   time={item.time}
                   icon={item.icon}
                   temperature={item.temp}
-                  badge={index === 0 ? 'Now' : undefined}
+                  badge={undefined}
                   softLightMode={softLightMode}
                 />
               )}
@@ -230,25 +235,29 @@ const ForecastScreen = () => {
           />
         </View>
       </AnimatedCard>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
-const createStyles = (softLightMode: boolean) => {
-  const textPrimary = softLightMode ? MoonSenseColors.MoonWhite : MoonSenseColors.NightGrey;
-  const textMuted = softLightMode ? 'rgba(255,255,255,0.7)' : MoonSenseColors.OrbitGrey;
-  const cardBg = softLightMode ? 'rgba(255,255,255,0.08)' : MoonSenseColors.MistBlue;
-  const surfaceBg = softLightMode ? MoonSenseColors.NightGrey : MoonSenseColors.LunarGlow;
-  const detailBg = softLightMode ? 'rgba(255,255,255,0.08)' : MoonSenseColors.MoonWhite;
-  const borderColor = softLightMode ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.08)';
+const createStyles = (softLightMode: boolean, theme: ReturnType<typeof getMoonTheme>) => {
+  const textPrimary = theme.text;
+  const textMuted = theme.textMuted;
+  const cardBg = theme.surface;
+  const surfaceBg = theme.background;
+  const detailBg = theme.surfaceAlt;
+  const borderColor = theme.border;
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: 'transparent',
     },
+    scroll: {
+      backgroundColor: 'transparent',
+    },
     contentContainer: {
       paddingTop: 60,
-      paddingBottom: 60,
+      paddingBottom: 130,
     },
     loadingState: {
       flex: 1,
@@ -258,15 +267,14 @@ const createStyles = (softLightMode: boolean) => {
     },
     heroCard: {
       marginHorizontal: 16,
-      borderRadius: 24,
-      padding: 22,
+      borderRadius: theme.radiusLg,
+      padding: theme.spaceMd,
       backgroundColor: cardBg,
-      borderWidth: softLightMode ? 1 : 0,
+      borderWidth: 1,
       borderColor,
     },
     heroTitle: {
-      fontSize: 24,
-      fontWeight: 'bold',
+      ...MoonType.cardTitle,
       color: textPrimary,
     },
     heroTitleRow: {
@@ -278,26 +286,22 @@ const createStyles = (softLightMode: boolean) => {
       color: textMuted,
       marginTop: 4,
     },
-    fallbackNote: {
-      marginTop: 8,
-      color: textMuted,
-    },
     dayList: {
-      marginTop: 16,
+      marginTop: theme.spaceMd,
       paddingRight: 16,
     },
     dayCard: {
       width: 140,
-      borderRadius: 20,
-      padding: 14,
+      borderRadius: theme.radiusMd,
+      padding: theme.spaceSm,
       marginRight: 12,
-      backgroundColor: detailBg,
-      borderWidth: softLightMode ? 1 : 0,
+      backgroundColor: cardBg,
+      borderWidth: 1,
       borderColor,
     },
     dayCardActive: {
-      backgroundColor: MoonSenseColors.CosmicPurple,
-      borderColor: MoonSenseColors.CosmicPurple,
+      backgroundColor: theme.primarySoft,
+      borderColor: theme.primary,
     },
     dayLabel: {
       fontSize: 16,
@@ -313,9 +317,9 @@ const createStyles = (softLightMode: boolean) => {
       marginTop: 2,
     },
     dayTemp: {
+      ...MoonType.numberSmall,
       fontSize: 18,
-      fontWeight: '700',
-      marginTop: 12,
+      marginTop: theme.spaceSm,
       color: textPrimary,
     },
     daySummary: {
@@ -329,16 +333,18 @@ const createStyles = (softLightMode: boolean) => {
     detailCard: {
       marginHorizontal: 16,
       marginTop: 24,
-      borderRadius: 24,
-      backgroundColor: detailBg,
-      padding: 22,
-      borderWidth: softLightMode ? 1 : 0,
+      borderRadius: theme.radiusLg,
+      backgroundColor: theme.surface,
+      padding: theme.spaceMd,
+      borderWidth: 1,
       borderColor,
     },
     sectionTitle: {
-      fontSize: 20,
-      fontWeight: '700',
+      ...MoonType.sectionTitle,
       color: textPrimary,
+    },
+    sectionTitleIndented: {
+      marginLeft: 12,
     },
     detailSummary: {
       color: textMuted,
@@ -347,18 +353,18 @@ const createStyles = (softLightMode: boolean) => {
     pillRow: {
       flexDirection: 'row',
       gap: 10,
-      marginTop: 12,
+      marginTop: theme.spaceSm,
     },
     detailPill: {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: cardBg,
-      borderRadius: 18,
-      paddingHorizontal: 12,
+      backgroundColor: theme.surface,
+      borderRadius: theme.radiusMd,
+      paddingHorizontal: theme.spaceSm,
       paddingVertical: 10,
       gap: 8,
-      borderWidth: softLightMode ? 1 : 0,
+      borderWidth: 1,
       borderColor,
     },
     detailLabel: {
@@ -370,14 +376,19 @@ const createStyles = (softLightMode: boolean) => {
       fontSize: 14,
       fontWeight: '600',
       color: textPrimary,
+      marginLeft: 'auto',
     },
   hourlyContainer: {
     marginHorizontal: 16,
     marginTop: 32,
     paddingVertical: 12,
+    borderRadius: theme.radiusLg,
+    borderWidth: 1,
+    borderColor,
+    backgroundColor: cardBg,
   },
   hourlyContainerDark: {
-    backgroundColor: 'transparent',
+    backgroundColor: cardBg,
   },
     hourlyHeader: {
       flexDirection: 'row',

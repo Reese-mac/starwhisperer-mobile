@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MoonSenseColors } from '../constants/colors';
+import { getMoonTheme } from '../theme/moonTheme';
+import { MoonType } from '../theme/moonTypography';
 
 const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   sun: 'sunny-outline',
@@ -12,9 +13,9 @@ const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   moon: 'moon-outline',
 };
 
-const ForecastIcon = ({ icon }: { icon: string; }) => {
+const ForecastIcon = ({ icon, color }: { icon: string; color: string }) => {
   const resolvedIcon = iconMap[icon] || 'cloud-outline';
-  return <Ionicons name={resolvedIcon} size={24} color={MoonSenseColors.OnSurface} />;
+  return <Ionicons name={resolvedIcon} size={24} color={color} />;
 };
 
 export type ForecastItemProps = {
@@ -23,62 +24,77 @@ export type ForecastItemProps = {
   temperature: string;
   badge?: string;
   hint?: string;
+  softLightMode?: boolean;
 };
 
-const ForecastItem = ({ time, icon, temperature, badge, hint }: ForecastItemProps) => {
+const ForecastItem = ({ time, icon, temperature, badge, hint, softLightMode = false }: ForecastItemProps) => {
+  const theme = getMoonTheme(softLightMode);
+  const [timeTop, timeBottom] = time.split(' ');
   return (
-    <View style={styles.container}>
-      <Text style={styles.time}>{time}</Text>
-      {badge && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{badge}</Text>
+    <View style={[styles.container, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      {badge ? (
+        <View style={[styles.badge, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+          <Text style={[styles.badgeText, { color: theme.primary }]}>{badge}</Text>
         </View>
-      )}
-      <ForecastIcon icon={icon} />
-      <Text style={styles.temperature}>{temperature}°</Text>
-      {hint && <Text style={styles.hint}>{hint}</Text>}
+      ) : null}
+      <View style={styles.timeBlock}>
+        <Text style={[styles.timeTop, { color: theme.textMuted }]}>{timeTop}</Text>
+        {timeBottom ? <Text style={[styles.timeBottom, { color: theme.textMuted }]}>{timeBottom}</Text> : null}
+      </View>
+      <ForecastIcon icon={icon} color={theme.text} />
+      <Text style={[styles.temperature, { color: theme.text }]}>{temperature}°</Text>
+      {hint && <Text style={[styles.hint, { color: theme.textMuted }]}>{hint}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: MoonSenseColors.Surface,
-    borderRadius: 35,
+    borderRadius: 26,
     alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingVertical: 16,
+    justifyContent: 'space-between',
+    paddingVertical: 14,
     paddingHorizontal: 10,
     marginHorizontal: 6,
     width: 70,
     height: 140,
+    borderWidth: 1,
   },
   time: {
-    fontSize: 12,
-    color: MoonSenseColors.OnSurfaceMedium,
-    fontWeight: '500',
+    ...MoonType.caption,
+    fontWeight: '600',
+    marginTop: 4,
   },
   badge: {
     paddingHorizontal: 10,
-    paddingVertical: 2,
-    borderRadius: 10,
-    backgroundColor: `rgba(187, 134, 252, 0.2)`, // Primary color with transparency
-    position: 'absolute',
-    top: 35,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignSelf: 'center',
+  },
+  timeBlock: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  timeTop: {
+    ...MoonType.caption,
+    fontWeight: '600',
+  },
+  timeBottom: {
+    ...MoonType.caption,
+    fontWeight: '600',
   },
   badgeText: {
     fontSize: 10,
-    color: MoonSenseColors.Primary,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
   temperature: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: MoonSenseColors.OnSurface,
+    ...MoonType.numberSmall,
   },
   hint: {
-    fontSize: 11,
-    color: MoonSenseColors.OnSurfaceDisabled,
+    ...MoonType.caption,
   },
 });
 
