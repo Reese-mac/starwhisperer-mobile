@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { TopBar } from './TopBar';
-import { TemperatureBlock } from './TemperatureBlock';
+import { TopBar } from '@/components/TopBar';
+import { TemperatureBlock } from '@/components/TemperatureBlock';
 
 interface HeaderBlockProps {
   city: string;
@@ -30,6 +30,7 @@ export const HeaderBlock = ({
         description={description}
         rangeText={rangeText}
         softLightMode={softLightMode}
+        city={city}
       />
     </View>
   );

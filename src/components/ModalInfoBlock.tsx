@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MoonSenseColors } from '../constants/colors';
+import { MoonSenseColors } from '@/constants/colors';
 
 export type ModalInfoBlockProps = {
   label: string;

@@ -1,2 +1,2 @@
-import ForecastScreen from "../../src/screens/ForecastScreen";
+import ForecastScreen from "@/screens/ForecastScreen";
 export default ForecastScreen;

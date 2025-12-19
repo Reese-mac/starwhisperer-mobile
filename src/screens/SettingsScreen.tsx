@@ -2,10 +2,10 @@ import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TextInput, Switch, FlatList, TouchableOpacity } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { CITY_OPTIONS } from '../constants/cities';
-import { useSettings } from '../context/SettingsContext';
-import { getMoonTheme } from '../theme/moonTheme';
-import { MoonType } from '../theme/moonTypography';
+import { CITY_OPTIONS } from '@/constants/cities';
+import { useSettings } from '@/context/SettingsContext';
+import { getMoonTheme } from '@/theme/moonTheme';
+import { MoonType } from '@/theme/moonTypography';
 
 const SettingsScreen = () => {
   const {

@@ -1,2 +1,2 @@
-import MoonScreen from "../../src/screens/MoonScreen";
+import MoonScreen from '@/screens/MoonScreen';
 export default MoonScreen;

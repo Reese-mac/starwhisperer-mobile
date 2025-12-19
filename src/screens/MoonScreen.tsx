@@ -1,14 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
-import AnimatedCard from '../components/AnimatedCard';
-import StatusBanner from '../components/StatusBanner';
-import { useSettings } from '../context/SettingsContext';
-import { getMoonPhases as getMockMoonPhases } from '../services/mockAPI';
-import { fetchMoonPhases as fetchLiveMoonPhases, MoonPhaseEntry } from '../services/weatherAPI';
-import { getMoonTheme } from '../theme/moonTheme';
-import { MoonType } from '../theme/moonTypography';
-import { MoonSenseColors } from '../constants/colors';
+import AnimatedCard from '@/components/AnimatedCard';
+import { useSettings } from '@/context/SettingsContext';
+import { getMoonPhases as getMockMoonPhases } from '@/services/mockAPI';
+import { fetchMoonPhases as fetchLiveMoonPhases, MoonPhaseEntry } from '@/services/weatherAPI';
+import { getMoonTheme } from '@/theme/moonTheme';
+import { MoonType } from '@/theme/moonTypography';
 
 const rituals = [
   { title: 'Intentions', detail: 'Write one line of gratitude before bed.' },
@@ -45,7 +43,6 @@ const MoonScreen = () => {
   const [phases, setPhases] = useState<MoonPhaseEntry[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
   useFocusEffect(
@@ -62,12 +59,10 @@ const MoonScreen = () => {
         const data = await fetchLiveMoonPhases(city);
         setPhases(data);
         setSelectedIndex(0);
-        setStatusMessage(null);
       } catch {
         const mockData = await getMockMoonPhases();
         setPhases(mockData);
         setSelectedIndex(0);
-        setStatusMessage('Showing sample moon cycles while live data reconnects.');
       } finally {
         setLoading(false);
       }
@@ -89,8 +84,6 @@ const MoonScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView ref={scrollRef} style={[styles.scroll, { backgroundColor: theme.background }]} contentContainerStyle={styles.contentContainer}>
-        {statusMessage ? <StatusBanner message={statusMessage} softLightMode={softLightMode} /> : null}
-
         {selectedPhase && (
           <AnimatedCard index={0}>
             <View style={styles.hero}>
@@ -163,7 +156,6 @@ const createStyles = (softLightMode: boolean, theme: ReturnType<typeof getMoonTh
   const textPrimary = theme.text;
   const textSecondary = theme.textMuted;
   const cardBg = theme.surface;
-  const pillBg = theme.surfaceAlt;
   const borderColor = theme.border;
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: 'transparent' },
@@ -171,8 +163,6 @@ const createStyles = (softLightMode: boolean, theme: ReturnType<typeof getMoonTh
     contentContainer: { paddingTop: 60, paddingBottom: 130 },
     center: { justifyContent: 'center', alignItems: 'center' },
     loadingText: { marginTop: 12, color: textPrimary },
-
-    statusText: { color: textPrimary, fontSize: 13 },
 
     hero: {
       marginHorizontal: 16,

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getMoonTheme } from '../theme/moonTheme';
-import { MoonType } from '../theme/moonTypography';
+import { getMoonTheme } from '@/theme/moonTheme';
+import { MoonType } from '@/theme/moonTypography';
 
 const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   sun: 'sunny-outline',
@@ -43,7 +43,7 @@ const ForecastItem = ({ time, icon, temperature, badge, hint, softLightMode = fa
       </View>
       <ForecastIcon icon={icon} color={theme.text} />
       <Text style={[styles.temperature, { color: theme.text }]}>{temperature}°</Text>
-      {hint && <Text style={[styles.hint, { color: theme.textMuted }]}>{hint}</Text>}
+      {hint ? <Text style={[styles.hint, { color: theme.textMuted }]}>{hint}</Text> : null}
     </View>
   );
 };

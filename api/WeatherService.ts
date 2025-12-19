@@ -1,4 +1,4 @@
-const API_KEY = process.env.EXPO_PUBLIC_WEATHERAPI_KEY ?? '';
+const API_KEY = process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY ?? '';
 const BASE_URL = 'https://api.weatherapi.com/v1';
 
 export type OpenWeatherUnits = 'metric' | 'imperial';
@@ -12,6 +12,8 @@ export type WeatherServiceResponse = {
     humidity: number;
     wind: number;
     uvi: number;
+    pressure: number;
+    aqi?: number;
     weather: string;
     sunrise: number;
     sunset: number;
@@ -47,9 +49,16 @@ export type WeatherServiceResponse = {
   };
 };
 
+export type CitySearchResult = {
+  name: string;
+  country: string;
+  lat: number;
+  lon: number;
+};
+
 const ensureApiKey = () => {
   if (!API_KEY) {
-    console.warn('[WeatherService] Missing WeatherAPI key. Set EXPO_PUBLIC_WEATHERAPI_KEY in .env.');
+    console.warn('[WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY in .env.');
     return false;
   }
   return true;
@@ -96,7 +105,7 @@ export async function getWeather(
     const query = `${lat},${lon}`;
     const url = `${BASE_URL}/forecast.json?key=${API_KEY}&q=${encodeURIComponent(
       query,
-    )}&days=7&aqi=no&alerts=no`;
+    )}&days=7&aqi=yes&alerts=no`;
 
     const res = await fetch(url);
     if (!res.ok) throw new Error('WeatherAPI request failed');
@@ -140,6 +149,8 @@ export async function getWeather(
         humidity: current?.humidity,
         wind: Number(windValueKph.toFixed(1)),
         uvi: current?.uv ?? 0,
+        pressure: current?.pressure_mb ?? 0,
+        aqi: current?.air_quality?.['us-epa-index'] ?? current?.air_quality?.pm2_5 ?? null,
         weather: current?.condition?.text ?? 'Unknown',
         sunrise: daily[0]?.sunrise ?? 0,
         sunset: daily[0]?.sunset ?? 0,
@@ -166,5 +177,29 @@ export async function getWeather(
   } catch (e) {
     console.warn('[WeatherAPI] ERROR:', e);
     return null;
+  }
+}
+
+export async function searchCity(query: string): Promise<CitySearchResult[]> {
+  if (!ensureApiKey()) return [];
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  try {
+    const url = `${BASE_URL}/search.json?key=${API_KEY}&q=${encodeURIComponent(trimmed)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('WeatherAPI search failed');
+
+    const json = await res.json();
+    if (!Array.isArray(json)) return [];
+    return json.map((item: any) => ({
+      name: item.name ?? 'Unknown',
+      country: item.country ?? '',
+      lat: item.lat,
+      lon: item.lon,
+    }));
+  } catch (e) {
+    console.warn('[WeatherAPI] city search error:', e);
+    return [];
   }
 }

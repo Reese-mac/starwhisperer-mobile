@@ -27,21 +27,24 @@ const HEADER_DATA: HeaderData = {
 };
 
 const HOURLY_FORECAST_DATA: HourlyForecastItem[] = [
-  { time: '9 AM',  icon: 'sun-cloud', temp: '24' },
-  { time: '10 AM', icon: 'sun-cloud', temp: '25' },
-  { time: '11 AM', icon: 'cloud', temp: '25' },
-  { time: '12 PM', icon: 'cloud', temp: '26' },
-  { time: '1 PM',  icon: 'rain', temp: '24' },
-  { time: '2 PM',  icon: 'rain', temp: '23' },
-  { time: '3 PM',  icon: 'cloud', temp: '23' },
-  { time: '4 PM',  icon: 'sun-cloud', temp: '24' },
+  { time: '9 AM',  icon: 'sun-cloud', temp: '24', uv: 1.2 },
+  { time: '10 AM', icon: 'sun-cloud', temp: '25', uv: 2.0 },
+  { time: '11 AM', icon: 'cloud', temp: '25', uv: 2.8 },
+  { time: '12 PM', icon: 'cloud', temp: '26', uv: 3.5 },
+  { time: '1 PM',  icon: 'rain', temp: '24', uv: 2.5 },
+  { time: '2 PM',  icon: 'rain', temp: '23', uv: 1.8 },
+  { time: '3 PM',  icon: 'cloud', temp: '23', uv: 1.5 },
+  { time: '4 PM',  icon: 'sun-cloud', temp: '24', uv: 1.0 },
 ];
 
 const WEATHER_DETAILS_DATA: WeatherDetail[] = [
-  { title: 'Humidity',    value: '75%',     icon: 'drop',      color: MoonSenseColors.MoonLavender, type: 'humidity' },
-  { title: 'Feels Like',  value: '28°',     icon: 'thermo',    color: MoonSenseColors.MistBlue,     type: 'feelsLike' },
-  { title: 'Wind',        value: '12 km/h', icon: 'wind',      color: MoonSenseColors.MistBlue,     type: 'wind' },
-  { title: 'UV Index',    value: 'High',    icon: 'sun',       color: MoonSenseColors.MoonLavender, type: 'uvIndex' },
+  { title: 'Air Quality', value: 'Index 35', icon: 'leaf',   color: MoonSenseColors.MoonLavender, type: 'airQuality' },
+  { title: 'Humidity',    value: '75%',      icon: 'drop',   color: MoonSenseColors.MoonLavender, type: 'humidity' },
+  { title: 'Feels Like',  value: '28°',      icon: 'thermo', color: MoonSenseColors.MistBlue,     type: 'feelsLike' },
+  { title: 'Wind',        value: '12 km/h',  icon: 'wind',   color: MoonSenseColors.MistBlue,     type: 'wind' },
+  { title: 'UV Index',    value: 'High',     icon: 'sun',    color: MoonSenseColors.MoonLavender, type: 'uvIndex' },
+  { title: 'Sunrise & Sunset', value: '6:05 AM / 7:30 PM', icon: 'sunrise', color: MoonSenseColors.SoftIndigo, type: 'sunriseSunset' },
+  { title: 'Pressure',    value: '1012 hPa', icon: 'barometer', color: MoonSenseColors.MoonLavender, type: 'pressure' },
 ];
 
 const DAILY_FORECAST_DATA: DailyForecastItem[] = [

@@ -1,17 +1,18 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getMoonTheme } from '../theme/moonTheme';
-import { MoonType } from '../theme/moonTypography';
+import { getMoonTheme } from '@/theme/moonTheme';
+import { MoonType } from '@/theme/moonTypography';
 
 const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   drop: 'water-outline',
   thermo: 'thermometer-outline',
-  wind: 'leaf-outline',
+  wind: 'navigate-outline',
   sun: 'sunny-outline',
   leaf: 'leaf-outline',
   barometer: 'speedometer-outline',
-  sunrise: 'sunny-outline',
+  sunrise: 'time-outline',
+  time: 'time-outline',
   'sun-rain': 'rainy-outline',
 };
 
@@ -28,12 +29,14 @@ const InfoCard = ({ title, value, icon, backgroundColor, softLightMode = false, 
   const theme = useMemo(() => getMoonTheme(softLightMode), [softLightMode]);
   const cardBg = theme.surface;
   const iconFill = backgroundColor ?? theme.primarySoft;
+  const iconSize = icon === 'sunrise' ? 16 : 20;
+  const resolvedIcon = icon === 'sunrise' ? 'time' : icon;
 
   return (
     <View style={[styles.cardContainer, { backgroundColor: cardBg, borderColor: theme.border }]}>
       <View style={styles.header}>
         <View style={[styles.iconContainer, { backgroundColor: iconFill, borderColor: theme.border }]}>
-          <Ionicons name={iconMap[icon] || 'planet-outline'} size={20} color={theme.text} />
+          <Ionicons name={iconMap[resolvedIcon] || 'planet-outline'} size={iconSize} color={theme.text} />
         </View>
         <Text style={[styles.title, { color: theme.textMuted }]}>{title}</Text>
       </View>

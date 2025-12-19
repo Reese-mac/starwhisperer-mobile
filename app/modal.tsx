@@ -4,11 +4,11 @@ import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import ModalInfoBlock from '../src/components/ModalInfoBlock';
-import { MoonSenseColors } from '../src/constants/colors';
-import { fetchMoonDetails, MoonDetails } from '../src/services/weatherAPI';
-import { getMoonDetails as getMockMoonDetails } from '../src/services/mockAPI';
-import { useSettings } from '../src/context/SettingsContext';
+import ModalInfoBlock from '@/components/ModalInfoBlock';
+import { MoonSenseColors } from '@/constants/colors';
+import { fetchMoonDetails, MoonDetails } from '@/services/weatherAPI';
+import { getMoonDetails as getMockMoonDetails } from '@/services/mockAPI';
+import { useSettings } from '@/context/SettingsContext';
 
 const ModalScreen = () => {
   const router = useRouter();

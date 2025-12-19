@@ -2,16 +2,15 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import ListCard from '../../src/components/ListCard';
-import StatusBanner from '../../src/components/StatusBanner';
-import { MoonSenseColors } from '../../src/constants/colors';
-import { CITY_OPTIONS, CityOption } from '../../src/constants/cities';
-import { fetchCitySnapshot } from '../../src/services/weatherAPI';
+import ListCard from '@/components/ListCard';
+import { MoonSenseColors } from '@/constants/colors';
+import { CITY_OPTIONS, CityOption } from '@/constants/cities';
+import { fetchCitySnapshot } from '@/services/weatherAPI';
 import { searchCity } from '../../api/WeatherService';
-import { getCities as getMockCities } from '../../src/services/mockAPI';
-import { useSettings } from '../../src/context/SettingsContext';
-import { getMoonTheme } from '../../src/theme/moonTheme';
-import { MoonType } from '../../src/theme/moonTypography';
+import { getCities as getMockCities } from '@/services/mockAPI';
+import { useSettings } from '@/context/SettingsContext';
+import { getMoonTheme } from '@/theme/moonTheme';
+import { MoonType } from '@/theme/moonTypography';
 
 const CARD_COLORS = [MoonSenseColors.MoonLavender, MoonSenseColors.MistBlue, MoonSenseColors.SoftIndigo];
 
@@ -37,7 +36,6 @@ const ExploreScreen = () => {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const quickFilters = ['all', 'sunny', 'rainy'];
 
   useEffect(() => {
@@ -78,17 +76,14 @@ const ExploreScreen = () => {
         const hasLiveData = snapshots.some(item => item.temp !== '--');
         if (hasLiveData) {
           setCities(snapshots);
-          setStatusMessage(null);
         } else {
           const mockCities = mapMock(await getMockCities());
           setCities(mockCities);
-          setStatusMessage('Showing sample city moods until live data reconnects.');
         }
       } catch (error) {
         console.warn('Explore city snapshots failed, showing mock data instead.', error);
         const mockCities = mapMock(await getMockCities());
         setCities(mockCities);
-        setStatusMessage('Showing sample city moods until live data reconnects.');
       } finally {
         setLoading(false);
       }
@@ -180,8 +175,6 @@ const ExploreScreen = () => {
       <View style={styles.titleRow}>
         <Text style={styles.title}>Explore</Text>
       </View>
-
-      {statusMessage ? <StatusBanner message={statusMessage} softLightMode={softLightMode} /> : null}
 
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={18} color={styles.searchIconColor.color} style={styles.searchIcon} />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
-import { MoonSenseColors } from '../constants/colors';
+import { MoonSenseColors } from '@/constants/colors';
 
 interface MoonEnergyPopupProps {
   isVisible: boolean;

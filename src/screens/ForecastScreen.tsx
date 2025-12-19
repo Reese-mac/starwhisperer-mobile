@@ -11,13 +11,12 @@ import {
 } from 'react-native';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import AnimatedCard from '../components/AnimatedCard';
-import ForecastItem from '../components/ForecastItem';
-import StatusBanner from '../components/StatusBanner';
-import { useSettings } from '../context/SettingsContext';
-import { useWeatherData } from '../hooks/useWeatherData';
-import { getMoonTheme } from '../theme/moonTheme';
-import { MoonType } from '../theme/moonTypography';
+import AnimatedCard from '@/components/AnimatedCard';
+import ForecastItem from '@/components/ForecastItem';
+import { useSettings } from '@/context/SettingsContext';
+import { useWeatherData } from '@/hooks/useWeatherData';
+import { getMoonTheme } from '@/theme/moonTheme';
+import { MoonType } from '@/theme/moonTypography';
 
 const HOURLY_CARD_WIDTH = 70;
 const HOURLY_CARD_MARGIN = 6;
@@ -95,8 +94,7 @@ const ForecastScreen = () => {
   );
 
   const daily = useMemo(() => data?.daily ?? [], [data]);
-  const hourly = data?.hourly ?? [];
-  const hasDailyData = daily.length > 0;
+  const hourly = useMemo(() => data?.hourly ?? [], [data]);
   const safeDaily = useMemo(() => {
     if (daily.length) return daily;
     if (!hourly.length) return [];
@@ -156,33 +154,30 @@ const ForecastScreen = () => {
         contentContainerStyle={styles.contentContainer}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.primary} />}
       >
-      <AnimatedCard index={0}>
-        <View style={styles.heroCard}>
-          <View style={styles.heroTitleRow}>
-            <Text style={styles.heroTitle}>Weekly outlook</Text>
+        <AnimatedCard index={0}>
+          <View style={styles.heroCard}>
+            <View style={styles.heroTitleRow}>
+              <Text style={styles.heroTitle}>Weekly outlook</Text>
+            </View>
+            <Text style={styles.heroSubtitle}>Tap a day to reveal rituals and conditions.</Text>
+            <FlatList
+              ref={dayListRef}
+              data={safeDaily}
+              keyExtractor={item => item.day}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.dayList}
+              renderItem={({ item, index }) => (
+                <DayCard
+                  item={item}
+                  isActive={selectedIndex === index}
+                  onSelect={() => setSelectedIndex(index)}
+                  styles={styles}
+                />
+              )}
+            />
           </View>
-          <Text style={styles.heroSubtitle}>Tap a day to reveal rituals and conditions.</Text>
-          {!hasDailyData ? (
-            <StatusBanner message="Daily forecast not available; using an hourly snapshot." softLightMode={softLightMode} />
-          ) : null}
-          <FlatList
-            ref={dayListRef}
-            data={safeDaily}
-            keyExtractor={item => item.day}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.dayList}
-            renderItem={({ item, index }) => (
-              <DayCard
-                item={item}
-                isActive={selectedIndex === index}
-                onSelect={() => setSelectedIndex(index)}
-                styles={styles}
-              />
-            )}
-          />
-        </View>
-      </AnimatedCard>
+        </AnimatedCard>
 
       {selectedDay ? (
         <AnimatedCard index={1}>
@@ -245,7 +240,6 @@ const createStyles = (softLightMode: boolean, theme: ReturnType<typeof getMoonTh
   const textMuted = theme.textMuted;
   const cardBg = theme.surface;
   const surfaceBg = theme.background;
-  const detailBg = theme.surfaceAlt;
   const borderColor = theme.border;
   return StyleSheet.create({
     container: {

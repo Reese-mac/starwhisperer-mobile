@@ -1,7 +1,7 @@
 import 'react-native-reanimated';
 
 import { Stack } from 'expo-router';
-import { SettingsProvider } from '../src/context/SettingsContext';
+import { SettingsProvider } from '@/context/SettingsContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {

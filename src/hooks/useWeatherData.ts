@@ -50,6 +50,7 @@ const toOrderedDetails = (details: WeatherDetail[]): WeatherDetail[] =>
 export const useWeatherData = () => {
   const { ready, city, unit } = useSettings();
   const [data, setData] = useState<WeatherDataBundle | null>(null);
+  const [dataSource, setDataSource] = useState<'sample' | 'live'>('sample');
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -82,6 +83,7 @@ export const useWeatherData = () => {
       const hourly = bundle.hourly.map(item => ({
         ...item,
         temp: withUnitSymbol(convertTemp(item.temp)),
+        uv: item.uv,
       }));
 
       const details = bundle.details.map(detail => {
@@ -132,6 +134,8 @@ export const useWeatherData = () => {
     try {
       const bundle = await fetchWeatherBundle(city, unit);
       applyBundle(bundle);
+      setDataSource('live');
+      setError(null);
     } catch (err) {
       console.warn('useWeatherData fetch error (handled by fallback)', err);
       try {
@@ -143,6 +147,7 @@ export const useWeatherData = () => {
             header: { ...mockBundle.header, city: cityName },
           }),
         );
+        setDataSource('sample');
         setError(SAMPLE_DATA_NOTICE);
       } catch (mockErr) {
         console.error('useWeatherData mock fallback error', mockErr);
@@ -151,7 +156,7 @@ export const useWeatherData = () => {
     } finally {
       setRefreshing(false);
     }
-  }, [city, unit, ready, applyBundle]);
+  }, [city, unit, ready, applyBundle, convertBundleUnits]);
 
   useEffect(() => {
     fetchData();
@@ -159,6 +164,7 @@ export const useWeatherData = () => {
 
   return {
     data,
+    dataSource,
     refreshing,
     error,
     lastUpdated,

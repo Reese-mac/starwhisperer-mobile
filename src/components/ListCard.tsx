@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MoonSenseColors } from '../constants/colors';
-import { getMoonTheme } from '../theme/moonTheme';
-import { MoonType } from '../theme/moonTypography';
+import { MoonSenseColors } from '@/constants/colors';
+import { getMoonTheme } from '@/theme/moonTheme';
+import { MoonType } from '@/theme/moonTypography';
 
 const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
   sun: 'sunny',

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
-import { CITY_OPTIONS, CityOption } from '../constants/cities';
+import { CITY_OPTIONS, CityOption } from '@/constants/cities';
 
 type TemperatureUnit = 'celsius' | 'fahrenheit';
 

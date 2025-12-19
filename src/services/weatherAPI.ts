@@ -150,8 +150,16 @@ const buildWaterData = (waterTemp: number, trend: string): WaterTempData => ({
 const buildDetails = (weather: WeatherServiceResponse, unitSymbol: string): WeatherDetail[] => {
   const waterTempValue = estimateWaterTemp(weather.current.temp, weather.current.humidity);
 
+  const aqiValue = weather.current.aqi ?? null;
+
   return [
-    { title: 'Air Temperature', value: `${Math.round(weather.current.temp)}${unitSymbol}`, icon: 'thermo', color: '#BFB3FF', type: 'airTemp' },
+    {
+      title: 'Air Quality',
+      value: aqiValue !== null ? `Index ${Math.round(aqiValue)}` : '--',
+      icon: 'leaf',
+      color: '#BFB3FF',
+      type: 'airQuality',
+    },
     { title: 'Feels Like', value: `${Math.round(weather.current.feels)}${unitSymbol}`, icon: 'thermo', color: '#E9F0FF', type: 'feelsLike' },
     { title: 'Humidity', value: `${Math.round(weather.current.humidity)}%`, icon: 'drop', color: '#BFB3FF', type: 'humidity' },
     { title: 'Wind', value: `${weather.current.wind} km/h`, icon: 'wind', color: '#E9F0FF', type: 'wind' },
@@ -165,11 +173,11 @@ const buildDetails = (weather: WeatherServiceResponse, unitSymbol: string): Weat
       type: 'waterTemp',
     },
     {
-      title: 'City Pulse',
-      value: weather.city,
-      icon: 'leaf',
-      color: '#FFFFFF',
-      type: 'airQuality',
+      title: 'Pressure',
+      value: `${Math.round(weather.current.pressure)} hPa`,
+      icon: 'barometer',
+      color: '#E4E0FF',
+      type: 'pressure',
     },
   ];
 };

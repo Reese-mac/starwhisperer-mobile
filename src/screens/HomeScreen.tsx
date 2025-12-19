@@ -1,9 +1,12 @@
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
+  Modal,
+  Easing,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -11,21 +14,23 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import AnimatedCard from '../components/AnimatedCard';
-import ForecastItem from '../components/ForecastItem';
-import { HeaderBlock } from '../components/HeaderBlock';
-import InfoCard from '../components/InfoCard';
-import MoonEnergyPopup from '../components/MoonEnergyPopup';
+import AnimatedCard from '@/components/AnimatedCard';
+import ForecastItem from '@/components/ForecastItem';
+import { HeaderBlock } from '@/components/HeaderBlock';
+import InfoCard from '@/components/InfoCard';
+import MoonEnergyPopup from '@/components/MoonEnergyPopup';
 
-import { MoonSenseColors } from '../constants/colors';
-import { useWeatherData } from '../hooks/useWeatherData';
-import { useSettings } from '../context/SettingsContext';
-import { getMoonTheme } from '../theme/moonTheme';
-import { MoonType } from '../theme/moonTypography';
+import { MoonSenseColors } from '@/constants/colors';
+import { useWeatherData } from '@/hooks/useWeatherData';
+import { useSettings } from '@/context/SettingsContext';
+import { getMoonTheme } from '@/theme/moonTheme';
+import { MoonType } from '@/theme/moonTypography';
 
 const HOURLY_CARD_WIDTH = 70;
 const HOURLY_CARD_MARGIN = 6;
@@ -111,6 +116,104 @@ export default function HomeScreen() {
     [weatherDetailsWithExpanded],
   );
 
+  const [showWelcome, setShowWelcome] = useState(true);
+  const welcomeOpacity = useRef(new Animated.Value(0)).current;
+  const welcomeText = 'WELCOME TO MINIMAL MOON WEATHER';
+  const letterAnims = useRef(welcomeText.split('').map(() => new Animated.Value(0))).current;
+  const [welcomeColors, setWelcomeColors] = useState<string[]>([]);
+  const blackFade = useRef(new Animated.Value(1)).current;
+  const trailX = useRef(new Animated.Value(0)).current;
+  const screenWidth = Dimensions.get('window').width;
+  const welcomeSound = useRef<any>(null);
+  const [skipping, setSkipping] = useState(false);
+
+  const handleDismiss = React.useCallback(() => {
+    if (skipping) return;
+    setSkipping(true);
+    Animated.timing(welcomeOpacity, {
+      toValue: 0,
+      duration: 400,
+      useNativeDriver: true,
+    }).start(() => setShowWelcome(false));
+  }, [skipping, welcomeOpacity]);
+
+  useEffect(() => {
+    const compute = () => welcomeText.split('').map(() => '#FFFFFF');
+    setWelcomeColors(compute());
+    return undefined;
+  }, [welcomeText]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      (async () => {
+        try {
+          const { Audio } = await import('expo-av');
+          const { sound } = await Audio.Sound.createAsync({
+            uri: 'https://cdn.pixabay.com/download/audio/2022/10/09/audio_d5602aacb6.mp3?filename=sparkles-7180.mp3',
+          });
+          welcomeSound.current = sound;
+          await sound.playAsync();
+        } catch (err) {
+          console.warn('welcome sound failed', err);
+        }
+      })();
+    }
+
+    if (!showWelcome) return undefined;
+    Animated.timing(welcomeOpacity, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+    Animated.stagger(
+      40,
+      letterAnims.map(anim =>
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ),
+    ).start();
+    Animated.timing(blackFade, {
+      toValue: 0,
+      duration: 500,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+    const trailLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(trailX, {
+          toValue: screenWidth + 200,
+          duration: 2400,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(trailX, {
+          toValue: -200,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    trailLoop.start();
+    const timeout = setTimeout(() => handleDismiss(), 5000);
+    return () => {
+      clearTimeout(timeout);
+      trailLoop.stop();
+      if (Platform.OS !== 'web') {
+        (async () => {
+          try {
+            await welcomeSound.current?.unloadAsync();
+          } catch {
+            /* ignore sound unload errors */
+          }
+          welcomeSound.current = null;
+        })();
+      }
+    };
+  }, [showWelcome, welcomeOpacity, letterAnims, blackFade, trailX, screenWidth, handleDismiss]);
+
   if (!data) {
     return (
       <View style={[styles.loadingState, { backgroundColor: theme.background }]}>
@@ -183,7 +286,7 @@ export default function HomeScreen() {
                   icon={item.icon}
                   temperature={item.temp}
                   badge={undefined}
-                  hint={item.uv ? 'UV' : item.icon?.includes('rain') ? 'Rain' : undefined}
+                  hint={item.icon?.includes('rain') ? 'Rain' : undefined}
                   softLightMode={softLightMode}
                 />
               )}
@@ -239,6 +342,55 @@ export default function HomeScreen() {
         onClose={() => setIsPopupVisible(false)}
         message={data.advice?.advice ?? 'Embrace the cosmic vibes.'}
       />
+      {showWelcome ? (
+        <Modal visible transparent={false} animationType="fade" onRequestClose={handleDismiss}>
+          <Animated.View style={[styles.welcomeOverlay, { opacity: welcomeOpacity }]}>
+            <LinearGradient
+              colors={['#ffffff', '#e6e0ff', '#d4caff']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={styles.welcomeOverlay}
+            >
+              <View style={styles.welcomeLetters}>
+                {welcomeText.split('').map((char, idx) => (
+                  <Animated.Text
+                    key={`${char}-${idx}`}
+                    style={[
+                      styles.welcomeText,
+                      {
+                        color: welcomeColors[idx],
+                        opacity: letterAnims[idx],
+                        transform: [
+                          {
+                            translateY: letterAnims[idx].interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [10, 0],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
+                    {char}
+                  </Animated.Text>
+                ))}
+              </View>
+              <Animated.View
+                style={[
+                  styles.trail,
+                  {
+                    transform: [{ translateX: trailX }],
+                  },
+                ]}
+              />
+              <Animated.View style={[styles.blackFade, { opacity: blackFade }]} />
+              <TouchableOpacity style={styles.skipButton} onPress={handleDismiss}>
+                <Text style={styles.skipText}>Skip</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </Animated.View>
+        </Modal>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -264,7 +416,7 @@ const styles = StyleSheet.create({
   topArc: {
     borderBottomLeftRadius: 56,
     borderBottomRightRadius: 56,
-    overflow: 'hidden',
+    overflow: 'visible',
     paddingBottom: 32,
   },
   headerWrapper: {
@@ -283,7 +435,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...MoonType.sectionTitle,
     marginBottom: 12,
-    marginLeft: 24,
+    marginLeft: 16,
+    textAlign: 'left',
   },
   infoCardGrid: {
     marginHorizontal: 16,
@@ -306,22 +459,30 @@ const styles = StyleSheet.create({
     maxWidth: '48%',
   },
   moonSummaryCard: {
-    marginHorizontal: 16,
-    padding: 18,
+    marginHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E8E5FF',
+    gap: 8,
+    alignItems: 'flex-start',
   },
   summaryText: {
-    fontSize: 14,
-    marginVertical: 8,
+    fontSize: 15,
+    lineHeight: 22,
+    marginVertical: 4,
+    textAlign: 'left',
+    width: '100%',
   },
   summaryCta: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
   },
   summaryCtaText: {
-    fontWeight: '600',
+    fontWeight: '700',
   },
   moodCard: {
     marginTop: 6,
@@ -362,5 +523,56 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 12,
     letterSpacing: 0.1,
+  },
+  welcomeOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2000,
+    gap: 16,
+  },
+  welcomeText: {
+    ...MoonType.sectionTitle,
+    color: '#FFFFFF',
+    letterSpacing: 1.4,
+    textShadowColor: 'rgba(0,0,0,0.35)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
+  },
+  welcomeLetters: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  trail: {
+    position: 'absolute',
+    top: '45%',
+    left: -200,
+    width: 200,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+  },
+  blackFade: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'black',
+  },
+  skipButton: {
+    position: 'absolute',
+    bottom: 36,
+    right: 24,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    borderColor: 'transparent',
+    shadowColor: 'transparent',
+  },
+  skipText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    letterSpacing: 0.6,
   },
 });
