@@ -6,7 +6,7 @@ import { useSettings } from '@/context/SettingsContext';
 import { getMoonTheme } from '@/theme/moonTheme';
 
 const TAB_ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
-  "weather-header": { active: "cloud", inactive: "cloud-outline" },
+  home: { active: "home", inactive: "home-outline" },
   explore: { active: "compass", inactive: "compass-outline" },
   moon: { active: "moon", inactive: "moon-outline" },
   forecast: { active: "calendar", inactive: "calendar-outline" },
@@ -19,6 +19,7 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      initialRouteName="home"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarHideOnKeyboard: true,
@@ -55,7 +56,7 @@ export default function TabsLayout() {
       })}
     >
       <Tabs.Screen name="index" options={{ href: null }} />
-      <Tabs.Screen name="weather-header" options={{ title: "Weather" }} />
+      <Tabs.Screen name="home" options={{ title: "Home" }} />
       <Tabs.Screen name="explore" options={{ title: "Explore" }} />
       <Tabs.Screen name="moon" options={{ title: "Moon" }} />
       <Tabs.Screen name="forecast" options={{ title: "Forecast" }} />

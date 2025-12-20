@@ -116,7 +116,7 @@ export default function HomeScreen() {
     [weatherDetailsWithExpanded],
   );
 
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
   const welcomeOpacity = useRef(new Animated.Value(0)).current;
   const welcomeText = 'WELCOME TO MINIMAL MOON WEATHER';
   const letterAnims = useRef(welcomeText.split('').map(() => new Animated.Value(0))).current;
@@ -245,8 +245,8 @@ export default function HomeScreen() {
               description={data.header.description}
               rangeText={rangeText}
               softLightMode={softLightMode}
-              onCityPress={() => router.push('/(tabs)/settings')}
-              onSettingsPress={() => router.push('/(tabs)/settings')}
+              onCityPress={() => router.push('/settings')}
+              onSettingsPress={() => router.push('/settings')}
             />
           </View>
           <AnimatedCard index={0.5}>

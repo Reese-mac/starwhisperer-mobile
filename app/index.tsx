@@ -3,5 +3,5 @@ import { Redirect } from 'expo-router';
 
 // Ensure the root "/" route lands in the tab stack so the bottom bar stays visible.
 export default function Index() {
-  return <Redirect href="/(tabs)/home" />;
+  return <Redirect href="/landing" />;
 }
