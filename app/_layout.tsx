@@ -8,7 +8,8 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SettingsProvider>
-        <Stack screenOptions={{ headerShown: false }} initialRouteName="(tabs)">
+        <Stack screenOptions={{ headerShown: false }} initialRouteName="landing">
+          <Stack.Screen name="landing" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
         </Stack>

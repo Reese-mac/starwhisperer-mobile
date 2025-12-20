@@ -216,10 +216,10 @@ export default function HomeScreen() {
 
   if (!data) {
     return (
-      <View style={[styles.loadingState, { backgroundColor: theme.background }]}>
+      <SafeAreaView style={[styles.loadingState, { backgroundColor: theme.background }]}>
         <ActivityIndicator color={theme.primary} size="large" />
         <Text style={[styles.loadingText, { color: theme.textMuted }]}>Preparing lunar briefing...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -236,6 +236,7 @@ export default function HomeScreen() {
             tintColor={theme.primary}
           />
         }
+        showsVerticalScrollIndicator={false}
       >
         <View style={[styles.topArc, { backgroundColor: theme.surface }]}>
           <View style={styles.headerWrapper}>

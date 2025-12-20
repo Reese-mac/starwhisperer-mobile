@@ -200,7 +200,6 @@ const ForecastScreen = () => {
         <View style={[styles.hourlyContainer, softLightMode && styles.hourlyContainerDark]}>
           <View style={styles.hourlyHeader}>
             <Text style={[styles.sectionTitle, styles.sectionTitleIndented]}>Hourly alignment</Text>
-            <Text style={styles.sectionHint}>Best windows to step outside</Text>
           </View>
           <FlatList
             ref={hourlyListRef}

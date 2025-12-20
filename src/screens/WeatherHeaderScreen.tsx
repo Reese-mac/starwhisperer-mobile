@@ -32,7 +32,7 @@ const WeatherHeaderScreen = () => {
         </Text>
         <View style={{ height: 14 }} />
         <TouchableOpacity
-          onPress={() => router.push('/home')}
+          onPress={() => router.push('/(tabs)/home')}
           activeOpacity={0.9}
           style={[styles.ctaButton, { backgroundColor: theme.primary }]}
         >
