@@ -1,4 +1,11 @@
-const API_KEY = process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY ?? '';
+import Constants from 'expo-constants';
+
+const API_KEY =
+  process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY ||
+  (typeof Constants.expoConfig?.extra?.openWeatherApiKey === 'string'
+    ? Constants.expoConfig.extra.openWeatherApiKey
+    : '') ||
+  '';
 const BASE_URL = 'https://api.weatherapi.com/v1';
 
 export type OpenWeatherUnits = 'metric' | 'imperial';
@@ -58,7 +65,9 @@ export type CitySearchResult = {
 
 const ensureApiKey = () => {
   if (!API_KEY) {
-    console.warn('[WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY in .env.');
+    console.warn(
+      '[WeatherService] Missing OpenWeather API key. Set EXPO_PUBLIC_OPENWEATHER_API_KEY in .env (or app.config.ts extra).',
+    );
     return false;
   }
   return true;
