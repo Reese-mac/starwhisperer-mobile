@@ -22,6 +22,8 @@ const ExploreScreen = () => {
   useScrollToTop(listRef);
   useFocusEffect(
     React.useCallback(() => {
+      setActiveFilter('all');
+      setQuery('');
       try {
         listRef.current?.scrollToOffset({ offset: 0, animated: true });
       } catch {
@@ -35,6 +37,7 @@ const ExploreScreen = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const quickFilters = ['all', 'sunny', 'rainy'];
 
@@ -96,12 +99,14 @@ const ExploreScreen = () => {
     if (trimmed.length < 2) {
       setSearchResults([]);
       setSearchLoading(false);
+      setStatusMessage(null);
       return;
     }
 
     let cancelled = false;
     const handleSearch = async () => {
       setSearchLoading(true);
+      setStatusMessage(null);
       try {
         const results = await searchCity(trimmed);
         const enriched = await Promise.all(
@@ -136,6 +141,7 @@ const ExploreScreen = () => {
         );
         if (!cancelled) {
           setSearchResults(enriched);
+          setStatusMessage(null);
         }
       } catch (error) {
         console.warn('City search is unavailable right now.', error);
@@ -188,21 +194,26 @@ const ExploreScreen = () => {
       </View>
 
       <View style={styles.filterRow}>
-        {quickFilters.map(filter => {
-          const isActive = activeFilter === filter;
-          return (
-            <TouchableOpacity
-              key={filter}
+      {quickFilters.map(filter => {
+        const isActive = activeFilter === filter;
+        return (
+          <TouchableOpacity
+            key={filter}
               style={[styles.filterChip, isActive && styles.filterChipActive]}
               onPress={() => setActiveFilter(filter)}
             >
               <Text style={[styles.filterLabel, isActive && styles.filterLabelActive]}>
                 {filter === 'all' ? 'All' : filter === 'sunny' ? 'Sun windows' : 'Rain watch'}
               </Text>
-            </TouchableOpacity>
-          );
-        })}
+          </TouchableOpacity>
+        );
+      })}
       </View>
+      {statusMessage ? (
+        <Text style={[styles.statusLabel, { marginHorizontal: 16, marginBottom: 8 }]}>
+          {statusMessage}
+        </Text>
+      ) : null}
 
       {query.trim().length >= 2 ? (
         searchLoading ? (

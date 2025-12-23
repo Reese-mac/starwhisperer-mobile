@@ -35,6 +35,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
   const [autoLocate, setAutoLocateState] = useState(true);
   const [softLightMode, setSoftLightModeState] = useState(false);
   const [locationCity, setLocationCity] = useState<CityOption | null>(null);
+  const FORCE_DAY_ON_LAUNCH = true;
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -55,8 +56,13 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         if (storedAuto !== null) {
           setAutoLocateState(storedAuto === 'true');
         }
-        if (storedSoft !== null) {
+        if (!FORCE_DAY_ON_LAUNCH && storedSoft !== null) {
           setSoftLightModeState(storedSoft === 'true');
+        }
+        // Force reset to day mode on each fresh load so the app always starts in day.
+        if (FORCE_DAY_ON_LAUNCH) {
+          setSoftLightModeState(false);
+          AsyncStorage.removeItem(STORAGE_KEYS.SOFT_LIGHT_MODE).catch(() => {});
         }
       } finally {
         setReady(true);

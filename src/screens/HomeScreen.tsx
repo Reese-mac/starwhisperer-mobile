@@ -27,6 +27,7 @@ import InfoCard from '@/components/InfoCard';
 import MoonEnergyPopup from '@/components/MoonEnergyPopup';
 
 import { MoonSenseColors } from '@/constants/colors';
+import { getEmotionalCopy } from '@/constants/emotionalCopy';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { useSettings } from '@/context/SettingsContext';
 import { getMoonTheme } from '@/theme/moonTheme';
@@ -36,11 +37,6 @@ const HOURLY_CARD_WIDTH = 70;
 const HOURLY_CARD_MARGIN = 6;
 const HOURLY_SNAP_INTERVAL = HOURLY_CARD_WIDTH + HOURLY_CARD_MARGIN * 2;
 const LIST_SIDE_PADDING = 16;
-const MOOD_LINES = [
-  'Slow your pace and listen to your breath.',
-  'Leave a minute tonight for moonlight and yourself.',
-  'Stay gentle; the world will feel softer too.',
-];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -49,10 +45,13 @@ export default function HomeScreen() {
   const { softLightMode } = useSettings();
   const theme = useMemo(() => getMoonTheme(softLightMode), [softLightMode]);
   const { data, refreshing, refetch, lastUpdated } = useWeatherData();
-  const moodLine = useMemo(() => {
-    const dayIndex = new Date().getDate() % MOOD_LINES.length;
-    return MOOD_LINES[dayIndex];
-  }, []);
+  const emotionalCopy = useMemo(() => {
+    return getEmotionalCopy({
+      description: data?.header.description,
+      temperature: data?.header.temperature,
+      now: new Date(),
+    });
+  }, [data?.header.description, data?.header.temperature]);
 
   const scrollRef = useRef<ScrollView>(null);
   const hourlyListRef = useRef<FlatList<any>>(null);
@@ -252,8 +251,9 @@ export default function HomeScreen() {
           </View>
           <AnimatedCard index={0.5}>
             <View style={[styles.moodCard, { backgroundColor: 'transparent', borderColor: 'transparent' }]}>
-              <Text style={[styles.moodTitle, { color: theme.text }]}>Moon note</Text>
-              <Text style={[styles.moodLine, { color: theme.textMuted }]}>{moodLine}</Text>
+              <Text style={[styles.moodTitle, { color: theme.text }]}>{emotionalCopy.title}</Text>
+              <Text style={[styles.moodLine, { color: theme.textMuted }]}>{emotionalCopy.line}</Text>
+              {/* CTA removed per request */}
               {lastUpdated ? (
                 <Text style={[styles.moodTimestamp, { color: theme.textMuted }]}>Updated at {lastUpdated}</Text>
               ) : null}

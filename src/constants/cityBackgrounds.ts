@@ -46,11 +46,11 @@ export const cityBackgrounds: Record<string, CityBackground> = {
     ratio: 16 / 9,
   },
   paris: {
-    uri: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80',
+    uri: 'https://svs.gsfc.nasa.gov/vis/a000000/a005000/a005048/frames/5760x3240_16x9_30p/fancy/comp.8568.tif',
     ratio: 16 / 9,
   },
   'paris · france': {
-    uri: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80',
+    uri: 'https://svs.gsfc.nasa.gov/vis/a000000/a005000/a005048/frames/5760x3240_16x9_30p/fancy/comp.8568.tif',
     ratio: 16 / 9,
   },
   taipei: {

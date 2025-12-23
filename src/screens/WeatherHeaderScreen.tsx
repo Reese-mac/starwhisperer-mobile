@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { getMoonTheme } from '../theme/moonTheme';
@@ -9,36 +9,51 @@ const theme = getMoonTheme(false);
 
 const WeatherHeaderScreen = () => {
   const router = useRouter();
+  const [imageError, setImageError] = useState(false);
+  const primaryImage =
+    'https://svs.gsfc.nasa.gov/vis/a000000/a005000/a005048/frames/5760x3240_16x9_30p/fancy/comp.8568.tif';
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#f5f1ff', '#d6d0ff', '#1f2233']}
-        style={styles.background}
-      />
-      <View style={styles.content}>
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>MinimalMoon Weather</Text>
-          <Text style={styles.subtitle}>Your cosmic weather companion</Text>
-        </View>
-      </View>
-
-      <View style={styles.ctaContainer}>
-        <Text style={[styles.subtitle, { textAlign: 'center', marginBottom: 12 }]}>
-          Step into the forecast
-        </Text>
-        <Text style={styles.ctaHint}>
-          Tap to open the full experience.
-        </Text>
-        <View style={{ height: 14 }} />
-        <TouchableOpacity
-          onPress={() => router.push('/(tabs)/home')}
-          activeOpacity={0.9}
-          style={[styles.ctaButton, { backgroundColor: theme.primary }]}
+      <ImageBackground
+        source={{
+          uri: imageError
+            ? 'https://svs.gsfc.nasa.gov/vis/a000000/a005000/a005048/frames/730x730_1x1_30p/moon.0750.jpg'
+            : primaryImage,
+        }}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+        onError={() => setImageError(true)}
+      >
+        <LinearGradient
+          colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.65)']}
+          style={styles.gradientOverlay}
         >
-          <Text style={styles.ctaButtonText}>Enter app</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.content}>
+            <View style={styles.textContainer}>
+              <Text style={styles.title}>MinimalMoon Weather</Text>
+              <Text style={styles.subtitle}>Your cosmic weather companion</Text>
+            </View>
+          </View>
+
+          <View style={styles.ctaContainer}>
+            <Text style={[styles.subtitle, { textAlign: 'center', marginBottom: 12 }]}>
+              Step into the forecast
+            </Text>
+            <Text style={styles.ctaHint}>
+              Tap to open the full experience.
+            </Text>
+            <View style={{ height: 14 }} />
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/home')}
+              activeOpacity={0.9}
+              style={[styles.ctaButton, { backgroundColor: theme.primary }]}
+            >
+              <Text style={styles.ctaButtonText}>Enter app</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      </ImageBackground>
     </View>
   );
 };
@@ -47,8 +62,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  background: {
-    ...StyleSheet.absoluteFillObject,
+  backgroundImage: {
+    flex: 1,
+  },
+  gradientOverlay: {
+    flex: 1,
   },
   content: {
     flex: 1,
